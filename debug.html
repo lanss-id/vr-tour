@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug PSV</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+    #viewer { width: 100%; height: 500px; border: 2px solid #ccc; }
+    .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>Photo Sphere Viewer Debug</h1>
+  <div class="debug">
+    <p>Status: <span id="status">Loading...</span></p>
+    <p>Console: <span id="console">Waiting...</span></p>
+  </div>
+  <div id="viewer"></div>
+
+  <script type="module">
+    import { Viewer } from 'https://unpkg.com/@photo-sphere-viewer/core@5.13.4/index.js';
+
+    document.getElementById('status').textContent = 'Script loaded';
+
+    try {
+      const viewer = new Viewer({
+        container: 'viewer',
+        panorama: 'https://photo-sphere-viewer-data.netlify.app/assets/tour/key-biscayne-1.jpg',
+        navbar: 'zoom move fullscreen',
+      });
+
+      document.getElementById('status').textContent = 'Viewer created successfully!';
+      document.getElementById('console').textContent = 'No errors';
+
+    } catch (error) {
+      document.getElementById('status').textContent = 'Error: ' + error.message;
+      document.getElementById('console').textContent = error.stack;
+    }
+  </script>
+</body>
+</html>

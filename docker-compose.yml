@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Development service
+  panorama-dev:
+    build:
+      context: .
+      target: builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    profiles:
+      - dev
+
+  # Production service
+  panorama-prod:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - prod
+
+  # Production with SSL (requires certificates)
+  panorama-ssl:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./ssl:/etc/nginx/ssl
+    environment:
+      - NODE_ENV=production
+    profiles:
+      - ssl
+
+  # Development with hot reload
+  panorama-hot:
+    build:
+      context: .
+      target: builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev -- --host
+    profiles:
+      - hot
+
+networks:
+  default:
+    name: panorama-network

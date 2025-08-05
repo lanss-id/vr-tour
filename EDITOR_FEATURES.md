@@ -1,351 +1,286 @@
 # VR Panorama Editor - Fitur Lengkap
 
-## 🎯 Overview
+## 🎯 **Overview**
 
-Editor interaktif untuk VR Panorama Tour dengan fitur-fitur yang mirip dengan SaaS Panoee, memungkinkan pengguna untuk mengedit panorama, hotspot, minimap, dan navigasi secara visual.
+VR Panorama Editor adalah aplikasi web interaktif untuk membuat dan mengedit tur panorama 360° dengan fitur-fitur canggih seperti hotspot interaktif, minimap, galeri, dan navigation menu yang dapat dikustomisasi.
 
-## 🚀 Fitur Utama
+## 🛠️ **Fitur Editor**
 
-### 1. **Editor Layout**
+### **1. Panorama Editor**
 
-- **Sidebar Kiri**: Panel untuk panorama, hotspot, kategori, dan properti
-- **Toolbar Atas**: Tools dan file operations
-- **Workspace Tengah**: Area editing panorama dengan viewer interaktif
-- **Status Bar Bawah**: Informasi project dan shortcuts
+- **Upload Panorama**: Upload file panorama 360° (JPG, PNG)
+- **Edit Properties**: Nama, caption, GPS coordinates
+- **Duplicate**: Salin panorama dengan pengaturan yang sama
+- **Delete**: Hapus panorama dan hotspot terkait
+- **Preview**: Lihat panorama dalam viewer
 
-### 2. **Panorama Management**
+### **2. Hotspot Editor (FULLY FUNCTIONAL)**
 
-- ✅ Upload panorama images (360° equirectangular)
-- ✅ Edit properti panorama (nama, caption, GPS coordinates)
-- ✅ Duplicate panorama
-- ✅ Delete panorama
-- ✅ Preview panorama sebelum publish
+- **Dynamic Hotspot Creation**:
+  - Click untuk menambah hotspot baru
+  - Drag & drop untuk memindahkan posisi
+  - Double-click untuk menghapus
+  - **Viewer Integration**: Hotspot otomatis tersimpan dan terlihat di viewer
+  - **Navigation Links**: Hotspot bisa berfungsi sebagai shortcut navigasi
 
-### 3. **Hotspot Editor (Interaktif)**
+- **Hotspot Management**:
+  - **Visibility Toggle**: Sembunyikan/tampilkan hotspot
+  - **Type-based Icons**: Icon berbeda untuk setiap tipe hotspot
+  - **Properties Panel**: Edit title, content, type, position
+  - **Style Customization**: Background color, border color, size
 
-- ✅ **Click to Add**: Klik di panorama untuk menambah hotspot baru
-- ✅ **Drag & Drop**: Drag hotspot untuk memindahkan posisi
-- ✅ **Visual Editor**: Hotspot ditampilkan sebagai marker di panorama
-- ✅ **Real-time Editing**: Perubahan langsung terlihat di viewer
-- ✅ **Properties Panel**: Edit title, content, type, dan style
-- ✅ **Visibility Toggle**: Show/hide hotspot
-- ✅ **Duplicate Hotspot**: Copy hotspot dengan properti yang sama
+- **Hotspot Types & Navigation**:
+  - **Info**: Menampilkan konten saat diklik
+  - **Link**: Navigasi ke panorama lain
+  - **Custom**: Untuk penggunaan lanjutan
+  - **Link Hotspot Features**:
+    - Target selection dari dropdown
+    - Visual indicator (→ arrow)
+    - Target preview di tooltip
+    - Navigasi otomatis saat diklik
+    - Exclude current panorama dari target
 
-### 4. **Minimap Editor (Drag & Drop)**
+- **Workflow Editor**:
+  1. Switch ke "Hotspot" tool (2)
+  2. Click di panorama untuk menambah hotspot
+  3. Set Type (Info/Link/Custom)
+  4. Set Target (untuk Link type)
+  5. Edit properties di sidebar
+  6. Hotspot otomatis tersimpan
 
-- ✅ **Upload Background**: Upload gambar site plan/aerial
-- ✅ **Click to Add Marker**: Klik di minimap untuk menambah marker
-- ✅ **Drag Markers**: Drag marker untuk reposisi
-- ✅ **Marker Properties**: Edit label, posisi, dan link panorama
-- ✅ **Visual Connection**: Marker terhubung dengan panorama
-- ✅ **Delete Markers**: Hapus marker yang tidak diperlukan
+- **Hotspot Navigation Workflow**:
+  1. Buat hotspot dengan type "Link"
+  2. Pilih target panorama dari dropdown
+  3. Hotspot akan menampilkan arrow (→)
+  4. Click hotspot di viewer untuk navigasi
+  5. Tooltip menampilkan nama target panorama
 
-### 5. **Category Management**
+### **3. Minimap Editor**
 
-- ✅ **CRUD Categories**: Create, Read, Update, Delete kategori
-- ✅ **Color Coding**: Set warna untuk setiap kategori
-- ✅ **Icon Assignment**: Assign icon untuk setiap kategori
-- ✅ **Order Management**: Atur urutan kategori
+- **Upload Background**: Upload gambar site plan
+- **Add Markers**: Click untuk menambah marker
+- **Drag Markers**: Pindahkan marker dengan drag & drop
+- **Edit Properties**: Label, position, linked panorama
+- **Visual Feedback**: Marker selected state
 
-### 6. **File Operations**
+### **4. Gallery Editor**
 
-- ✅ **Save Project**: Auto-save ke localStorage
-- ✅ **Export Project**: Export ke JSON file
-- ✅ **Import Project**: Import dari JSON file
-- ✅ **Upload Assets**: Upload panorama dan minimap images
+- **Thumbnail Management**: Upload dan edit thumbnail
+- **Layout Settings**: Grid, list, masonry
+- **Gallery Properties**: Title, description, order
 
-### 7. **Keyboard Shortcuts**
+### **5. Navigation Editor (NEW!)**
 
-- ✅ **1-5**: Switch tools (Panorama, Hotspot, Minimap, Gallery, Navigation)
-- ✅ **Ctrl+P**: Toggle preview mode
-- ✅ **Ctrl+S**: Save project
-- ✅ **Delete/Backspace**: Delete selected item
-- ✅ **ESC**: Clear selection
+- **Custom Navigation Structure**:
+  - Buat kategori dan sub-kategori
+  - Tambah item dengan thumbnail
+  - Set panorama target untuk setiap item
+  - **Card Layout**: Tampilan seperti referensi gambar
 
-## 🎨 UI Components
+- **Navigation Categories**:
+  - **Add Category**: Title, subtitle, icon
+  - **Add Items**: Title, subtitle, thumbnail, panorama target
+  - **Reorder Items**: Drag & drop untuk mengatur urutan
+  - **Upload Thumbnails**: Upload gambar untuk setiap item
 
-### Editor Layout Structure
+- **Layout Settings**:
+  - **Layout Type**: Cards (seperti referensi), Grid, List
+  - **Theme**: Light, Dark, Auto
+  - **Show Thumbnails**: Toggle thumbnail display
+  - **Show Subtitles**: Toggle subtitle display
+  - **Max Items Per Row**: Atur jumlah item per baris
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Editor Toolbar                          │
-├─────────────┬─────────────────────────────────────────────┤
-│             │                                             │
-│   Sidebar   │              Workspace                     │
-│             │                                             │
-│  - Panorama │          Panorama Viewer                   │
-│  - Hotspot  │          + Editor Overlays                 │
-│  - Minimap  │                                             │
-│  - Category │                                             │
-│  - Props    │                                             │
-│             │                                             │
-└─────────────┴─────────────────────────────────────────────┤
-│                    Status Bar                             │
-└─────────────────────────────────────────────────────────────┘
-```
+- **Navigation Menu Features**:
+  - **Card-based Layout**: Tampilan card yang modern
+  - **Thumbnail Support**: Gambar untuk setiap item
+  - **Category Navigation**: Klik kategori untuk lihat items
+  - **Direct Navigation**: Klik item untuk langsung ke panorama
+  - **Responsive Design**: Bekerja di desktop dan mobile
 
-### Hotspot Editor Features
+### **6. File Operations**
 
-- **Visual Markers**: Hotspot ditampilkan sebagai lingkaran berwarna
-- **Selection State**: Hotspot terpilih ditandai dengan warna merah
-- **Drag Handle**: Drag hotspot untuk reposisi
-- **Properties Panel**: Edit hotspot properties secara real-time
-- **Style Customization**: Custom background dan border color
+- **Save Project**: Simpan ke localStorage
+- **Export Project**: Download sebagai JSON
+- **Import Project**: Upload file JSON
+- **Auto-save**: Otomatis tersimpan saat ada perubahan
 
-### Minimap Editor Features
+## 🎮 **Keyboard Shortcuts**
 
-- **Background Upload**: Upload gambar site plan
-- **Marker Management**: Add, move, delete markers
-- **Position Control**: Precise positioning dengan input numerik
-- **Visual Feedback**: Marker terpilih ditandai dengan ring merah
-- **Connection Lines**: Visual connection antar marker
+### **Editor Tools**
 
-## 🔧 Technical Implementation
+- `1`: Panorama Editor
+- `2`: Hotspot Editor
+- `3`: Minimap Editor
+- `4`: Gallery Editor
+- `5`: Navigation Editor
 
-### State Management
+### **General**
 
-```typescript
-// Editor Store (Zustand)
-interface EditorState {
-  editMode: 'panorama' | 'minimap' | 'gallery' | 'navigation' | 'hotspot';
-  selectedPanorama: string | null;
-  selectedHotspot: string | null;
-  isDirty: boolean;
-  isPreviewMode: boolean;
+- `Ctrl+P`: Toggle Preview Mode
+- `Ctrl+S`: Save Project
+- `Escape`: Clear Selection
+- `Delete/Backspace`: Delete selected item
 
-  // CRUD operations
-  panoramas: PanoramaNode[];
-  hotspots: Hotspot[];
-  minimapData: MinimapData;
+### **Hotspot Editor**
 
-  // Actions
-  addHotspot: (hotspot: Hotspot) => void;
-  updateHotspot: (id: string, updates: Partial<Hotspot>) => void;
-  moveHotspot: (id: string, position: { yaw: number; pitch: number }) => void;
-  // ... more actions
-}
-```
+- Click: Add hotspot
+- Drag: Move hotspot
+- Double-click: Delete hotspot
 
-### Hotspot Interaction
+## 🎨 **UI/UX Features**
 
-```typescript
-// Drag & Drop Implementation
-const handleMouseDown = (e: React.MouseEvent) => {
-  if (editMode !== 'hotspot' || !selectedHotspot) return;
+### **Editor Layout**
 
-  const target = e.target as HTMLElement;
-  if (target.closest('.hotspot-marker')) {
-    setIsDraggingHotspot(true);
-    setDragStartPosition({ x: e.clientX, y: e.clientY });
-  }
-};
+- **Left Sidebar**: Tools dan properties panels
+- **Top Toolbar**: File operations dan actions
+- **Main Workspace**: Panorama viewer dengan overlay
+- **Bottom Status Bar**: Project info dan shortcuts
 
-const handleMouseMove = (e: React.MouseEvent) => {
-  if (!isDraggingHotspot || !viewerRef.current || !selectedHotspot) return;
+### **Preview Mode**
 
-  // Convert screen coordinates to spherical coordinates
-  const viewer = viewerRef.current;
-  const position = viewer.getPosition();
-  const newYaw = position.yaw + deltaX * 0.5;
-  const newPitch = Math.max(-90, Math.min(90, position.pitch - deltaY * 0.5));
+- **Toggle**: Switch antara editor dan preview
+- **Fullscreen**: Immersive viewing experience
+- **Navigation**: Semua kontrol viewer tersedia
 
-  updateHotspotPosition(selectedHotspot, { yaw: newYaw, pitch: newPitch });
-};
-```
+### **Responsive Design**
 
-### Minimap Drag & Drop
+- **Desktop**: Full editor interface
+- **Mobile**: Optimized touch interface
+- **Tablet**: Hybrid layout
 
-```typescript
-// Minimap Marker Dragging
-const handleMarkerMouseDown = (event: React.MouseEvent, markerId: string) => {
-  event.stopPropagation();
-  setIsDragging(true);
-  setDraggedMarker(markerId);
+## 🔧 **Technical Features**
 
-  const rect = minimapRef.current?.getBoundingClientRect();
-  if (rect) {
-    const marker = minimapData.markers.find(m => m.id === markerId);
-    if (marker) {
-      const markerX = (marker.x / 100) * rect.width;
-      const markerY = (marker.y / 100) * rect.height;
-      setDragOffset({
-        x: event.clientX - markerX,
-        y: event.clientY - markerY,
-      });
-    }
-  }
-};
-```
+### **State Management**
 
-## 🎮 User Experience
+- **Zustand**: Lightweight state management
+- **Persist**: Auto-save ke localStorage
+- **DevTools**: Debug dengan Redux DevTools
 
-### Workflow Editor
+### **Photo Sphere Viewer Integration**
 
-1. **Upload Panorama**: Upload gambar 360° panorama
-2. **Set Properties**: Edit nama, caption, dan GPS coordinates
-3. **Add Hotspots**: Klik di panorama untuk menambah hotspot
-4. **Edit Hotspots**: Drag untuk reposisi, edit properti di sidebar
-5. **Configure Minimap**: Upload site plan dan posisikan markers
-6. **Organize Categories**: Buat dan atur kategori navigasi
-7. **Preview & Test**: Toggle preview mode untuk testing
-8. **Save & Export**: Save project dan export untuk deployment
+- **Virtual Tour Plugin**: Navigasi antar panorama
+- **Markers Plugin**: Hotspot management
+- **Gallery Plugin**: Thumbnail gallery
+- **Custom Controls**: Custom control bar
 
-### Keyboard Shortcuts
+### **Performance**
 
-| Shortcut | Action                    |
-| -------- | ------------------------- |
-| `1`      | Switch to Panorama tool   |
-| `2`      | Switch to Hotspot tool    |
-| `3`      | Switch to Minimap tool    |
-| `4`      | Switch to Gallery tool    |
-| `5`      | Switch to Navigation tool |
-| `Ctrl+P` | Toggle preview mode       |
-| `Ctrl+S` | Save project              |
-| `Delete` | Delete selected item      |
-| `ESC`    | Clear selection           |
+- **Lazy Loading**: Load panorama on demand
+- **Image Optimization**: Compressed thumbnails
+- **Memory Management**: Proper cleanup
 
-### Mouse Interactions
+## 📱 **Viewer Features**
 
-- **Left Click**: Select item, add hotspot, add marker
-- **Drag**: Move hotspot, move minimap marker
-- **Right Click**: Context menu (future feature)
-- **Scroll**: Zoom in/out panorama
+### **Navigation Menu (Updated)**
 
-## 📊 Data Structure
+- **Custom Layout**: Menggunakan data dari editor
+- **Card Design**: Layout seperti referensi gambar
+- **Category Navigation**: Klik kategori untuk lihat items
+- **Thumbnail Display**: Gambar untuk setiap item
+- **Direct Navigation**: Klik item untuk langsung ke panorama
 
-### Hotspot Data
+### **Control Bar**
 
-```typescript
-interface Hotspot {
-  id: string;
-  panoramaId: string;
-  position: {
-    yaw: number; // Horizontal angle (-180 to 180)
-    pitch: number; // Vertical angle (-90 to 90)
-  };
-  type: 'info' | 'link' | 'custom';
-  title: string;
-  content?: string;
-  targetNodeId?: string;
-  style?: {
-    backgroundColor?: string;
-    borderColor?: string;
-    size?: number;
-  };
-  isVisible: boolean;
-}
+- **Navigation**: Previous/Next panorama
+- **Music Control**: Play/pause background music
+- **Gallery**: Toggle thumbnail gallery
+- **Minimap**: Toggle site plan
+- **Fullscreen**: Toggle fullscreen mode
+
+### **Hotspot Integration**
+
+- **Visible Hotspots**: Hotspot dari editor terlihat di viewer
+- **Interactive Navigation**: Click hotspot untuk navigasi
+- **Visual Feedback**: Hover effects dan animations
+- **Type Indicators**: Icon berbeda untuk setiap tipe
+
+## 🚀 **Getting Started**
+
+### **1. Setup Project**
+
+```bash
+npm install
+npm run dev
 ```
 
-### Minimap Data
+### **2. Editor Workflow**
 
-```typescript
-interface MinimapData {
-  backgroundImage: string;
-  markers: MinimapMarker[];
-}
+1. **Upload Panoramas**: Upload file panorama 360°
+2. **Add Hotspots**: Switch ke hotspot tool, click untuk menambah
+3. **Configure Navigation**: Buat kategori dan item di navigation editor
+4. **Test Navigation**: Preview mode untuk test navigasi
+5. **Export Project**: Download untuk deployment
 
-interface MinimapMarker {
-  id: string;
-  nodeId: string; // Linked panorama ID
-  x: number; // Percentage position (0-100)
-  y: number; // Percentage position (0-100)
-  label: string;
-}
+### **3. Navigation Editor Workflow**
+
+1. **Switch to Navigation Tool**: Tekan `5` atau klik Navigation tool
+2. **Add Categories**: Klik "Add Category" untuk buat kategori baru
+3. **Add Items**: Klik "+" di kategori untuk tambah item
+4. **Upload Thumbnails**: Upload gambar untuk setiap item
+5. **Set Panorama Target**: Pilih panorama yang akan dituju
+6. **Configure Layout**: Atur layout, theme, dan display options
+7. **Test in Viewer**: Lihat hasil di viewer mode
+
+## 🎯 **Unique Features**
+
+### **Navigation Menu Customization**
+
+- **Fully Editable**: Semua kategori dan item bisa diedit
+- **Card Layout**: Modern card design seperti referensi
+- **Thumbnail Support**: Upload gambar untuk setiap item
+- **Category Hierarchy**: Kategori dan sub-kategori
+- **Direct Navigation**: Klik item untuk langsung ke panorama
+- **Responsive Design**: Bekerja di semua device
+
+### **Hotspot Navigation**
+
+- **Link Hotspots**: Navigasi antar panorama
+- **Visual Indicators**: Arrow untuk link hotspots
+- **Target Preview**: Tooltip menampilkan target panorama
+- **Automatic Navigation**: Click untuk langsung pindah
+
+### **Editor Integration**
+
+- **Real-time Preview**: Lihat perubahan langsung di viewer
+- **Auto-save**: Semua perubahan otomatis tersimpan
+- **Export/Import**: Backup dan restore project
+- **Keyboard Shortcuts**: Navigasi cepat dengan keyboard
+
+## 📊 **Project Structure**
+
+```
+src/
+├── components/
+│   ├── editor/
+│   │   ├── NavigationEditor.tsx    # Navigation menu editor
+│   │   ├── EditorLayout.tsx        # Main editor layout
+│   │   ├── EditorSidebar.tsx       # Left sidebar
+│   │   ├── EditorToolbar.tsx       # Top toolbar
+│   │   ├── EditorWorkspace.tsx     # Main workspace
+│   │   └── EditorStatusBar.tsx     # Bottom status bar
+│   └── viewer/
+│       ├── NavigationMenu.tsx      # Custom navigation menu
+│       ├── PanoramaViewer.tsx      # PSV viewer
+│       └── ControlBar.tsx          # Custom controls
+├── store/
+│   └── editorStore.ts              # Zustand store
+├── types/
+│   └── editor.ts                   # TypeScript types
+└── hooks/
+    └── useEditor.tsx               # Editor logic
 ```
 
-## 🚀 Deployment & Export
+## 🎉 **Summary**
 
-### Project Export
+VR Panorama Editor sekarang memiliki fitur lengkap untuk membuat tur panorama 360° yang interaktif dengan:
 
-```typescript
-interface ProjectData {
-  panoramas: PanoramaNode[];
-  categories: Category[];
-  hotspots: Hotspot[];
-  minimapData: MinimapData;
-  metadata: {
-    name: string;
-    version: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-}
-```
+- **Navigation Links**: Hotspot berfungsi sebagai shortcut navigasi
+- **Viewer Integration**: Hotspot otomatis tersimpan dan terlihat di viewer
+- **Visibility Toggle**: Kontrol visibility hotspot
+- **Type-based Icons**: Icon berbeda untuk setiap tipe hotspot
+- **Custom Navigation Menu**: Layout card yang modern dan dapat dikustomisasi
+- **Thumbnail Support**: Upload gambar untuk navigation items
+- **Category Management**: Buat dan atur kategori navigation
+- **Direct Navigation**: Klik item untuk langsung ke panorama
 
-### Auto-Save
-
-- Project data disimpan otomatis ke localStorage
-- Indikator "Unsaved changes" di status bar
-- Manual save dengan Ctrl+S
-- Export ke JSON file untuk backup
-
-## 🔮 Future Enhancements
-
-### Planned Features
-
-- [ ] **Undo/Redo**: History management untuk semua actions
-- [ ] **Bulk Operations**: Select multiple items untuk batch edit
-- [ ] **Templates**: Pre-built templates untuk common use cases
-- [ ] **Collaboration**: Real-time collaboration (future)
-- [ ] **Advanced Hotspots**: Custom HTML content, animations
-- [ ] **Audio Support**: Background music, audio hotspots
-- [ ] **Mobile Editor**: Touch-friendly editor interface
-- [ ] **Performance Optimization**: Lazy loading, virtual scrolling
-
-### Advanced Features
-
-- [ ] **AI Hotspot Detection**: Auto-detect potential hotspot locations
-- [ ] **Smart Positioning**: Auto-align hotspots based on content
-- [ ] **Analytics Integration**: Track user interactions in editor
-- [ ] **Version Control**: Git-like versioning untuk projects
-- [ ] **Plugin System**: Extensible editor dengan custom plugins
-
-## 📝 Usage Examples
-
-### Creating a New Hotspot
-
-1. Select panorama di sidebar
-2. Switch ke "Hotspot" tool (shortcut: `2`)
-3. Klik di panorama untuk menambah hotspot
-4. Edit properti di sidebar (title, content, type)
-5. Drag hotspot untuk reposisi yang tepat
-6. Save project (Ctrl+S)
-
-### Editing Minimap
-
-1. Switch ke "Minimap" tool (shortcut: `3`)
-2. Upload background image (site plan)
-3. Klik di minimap untuk menambah marker
-4. Drag marker ke posisi yang tepat
-5. Edit marker properties (label, linked panorama)
-6. Test navigasi di preview mode
-
-### Organizing Categories
-
-1. Switch ke "Navigation" tool (shortcut: `5`)
-2. Create new categories dengan warna dan icon
-3. Assign panoramas ke kategori
-4. Set urutan kategori
-5. Preview navigation menu
-
-## 🎯 Performance Considerations
-
-### Optimization Strategies
-
-- **Lazy Loading**: Load panorama images on demand
-- **Virtual Scrolling**: Handle large lists efficiently
-- **Debounced Updates**: Prevent excessive re-renders
-- **Memory Management**: Cleanup resources properly
-- **Caching**: Cache frequently accessed data
-
-### Best Practices
-
-- **Batch Updates**: Group multiple state updates
-- **Memoization**: Use React.memo untuk expensive components
-- **Event Delegation**: Handle events efficiently
-- **Resource Cleanup**: Proper cleanup di useEffect
-- **Error Boundaries**: Graceful error handling
-
----
-
-**Editor ini memberikan pengalaman yang mirip dengan SaaS Panoee dengan fitur-fitur interaktif yang memungkinkan pengguna untuk mengedit panorama, hotspot, dan minimap secara visual dan intuitif.**
+Editor ini memberikan kontrol penuh atas struktur navigasi dan hotspot, memungkinkan pembuatan tur panorama yang sangat interaktif dan user-friendly.

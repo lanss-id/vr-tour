@@ -15,10 +15,14 @@ import {
     Map,
     Grid,
     Menu,
+    Bug,
+    FileJson,
 } from 'lucide-react';
 import { useEditor } from '../../hooks/useEditor';
 import { useEditorStore } from '../../store/editorStore';
+import { exportPanoramaDataToFile, syncHotspotsWithLinks } from '../../utils/panoramaLoader';
 import Button from '../common/Button';
+import { debugNavigationMenu, testSaveNavigationMenu } from '../../utils/debug';
 
 const EditorToolbar: React.FC = () => {
     const {
@@ -30,7 +34,7 @@ const EditorToolbar: React.FC = () => {
         handleImportProject,
     } = useEditor();
 
-    const { isDirty, saveProject } = useEditorStore();
+    const { isDirty, saveProject, hotspots } = useEditorStore();
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -44,6 +48,20 @@ const EditorToolbar: React.FC = () => {
         if (file) {
             // Handle panorama upload
             console.log('Uploading panorama:', file.name);
+        }
+    };
+
+    const handleExportPanoramaData = () => {
+        try {
+            // Sync hotspots with panorama links first
+            syncHotspotsWithLinks(hotspots);
+
+            // Export the updated panorama data
+            exportPanoramaDataToFile();
+
+            console.log('Panorama data exported with hotspot links');
+        } catch (error) {
+            console.error('Error exporting panorama data:', error);
         }
     };
 
@@ -121,6 +139,17 @@ const EditorToolbar: React.FC = () => {
                     </Button>
                 </div>
 
+                {/* Export Panorama Data */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleExportPanoramaData}
+                    title="Export Panorama Data with Links"
+                    className="text-green-600 hover:text-green-700"
+                >
+                    <FileJson className="w-4 h-4" />
+                </Button>
+
                 {/* Import Project */}
                 <div className="relative">
                     <input
@@ -154,10 +183,30 @@ const EditorToolbar: React.FC = () => {
                 <Button
                     variant={isDirty ? 'primary' : 'ghost'}
                     size="sm"
-                    onClick={saveProject}
+                    onClick={() => {
+                        try {
+                            saveProject();
+                            // Show success feedback using a more stable approach
+                            const button = document.querySelector('[data-save-button]') as HTMLElement;
+                            if (button) {
+                                const originalText = button.textContent;
+                                button.textContent = 'Saved!';
+                                setTimeout(() => {
+                                    if (button) {
+                                        button.textContent = originalText;
+                                    }
+                                }, 1000);
+                            }
+                        } catch (error) {
+                            console.error('Error saving project:', error);
+                        }
+                    }}
                     title="Save Project (Ctrl+S)"
+                    className={isDirty ? 'animate-pulse' : ''}
+                    data-save-button="true"
                 >
                     <Save className="w-4 h-4" />
+                    {isDirty && <span className="ml-1 text-xs">*</span>}
                 </Button>
 
                 {/* Settings */}
@@ -169,6 +218,22 @@ const EditorToolbar: React.FC = () => {
                 >
                     <Settings className="w-4 h-4" />
                 </Button>
+
+                {/* Debug Button (Development Only) */}
+                {process.env.NODE_ENV === 'development' && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                            debugNavigationMenu();
+                            testSaveNavigationMenu();
+                        }}
+                        title="Debug Navigation Menu"
+                        className="text-orange-600"
+                    >
+                        <Bug className="w-4 h-4" />
+                    </Button>
+                )}
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+    variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'transparent';
     size?: 'sm' | 'md' | 'lg';
     children: React.ReactNode;
 }
@@ -21,6 +21,7 @@ const Button: React.FC<ButtonProps> = ({
         secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
         ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
         danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+        transparent: 'bg-white/50 text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
     };
 
     const sizeClasses = {

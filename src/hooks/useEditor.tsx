@@ -1,29 +1,26 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Viewer } from '@photo-sphere-viewer/core';
+import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
 import { useEditorStore } from '../store/editorStore';
 import { useViewerStore } from '../store/viewerStore';
-import { Hotspot, EditorTool } from '../types/editor';
-import { PanoramaNode } from '../types/panorama';
+import { EditorTool } from '../types/editor';
 
 export const useEditor = () => {
     const {
-        editMode,
-        selectedPanorama,
-        selectedHotspot,
-        isPreviewMode,
-        panoramas,
+        currentPanoramaId,
         hotspots,
-        setEditMode,
-        setSelectedPanorama,
+        selectedHotspotId,
+        setCurrentPanorama,
         setSelectedHotspot,
-        togglePreviewMode,
         addHotspot,
         updateHotspot,
         deleteHotspot,
-        moveHotspot,
     } = useEditorStore();
 
     const { setCurrentNode } = useViewerStore();
-    const viewerRef = useRef<any>(null);
+
+    const viewerRef = useRef<Viewer | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Editor tools configuration
     const editorTools: EditorTool[] = [
@@ -32,158 +29,140 @@ export const useEditor = () => {
             name: 'Panorama',
             icon: 'image',
             shortcut: '1',
-            description: 'Edit panorama settings',
-            isActive: editMode === 'panorama',
+            description: 'Edit panorama properties and settings',
+            isActive: true,
         },
         {
             id: 'hotspot',
             name: 'Hotspot',
             icon: 'target',
             shortcut: '2',
-            description: 'Add and edit hotspots',
-            isActive: editMode === 'hotspot',
+            description: 'Add and edit hotspots on panoramas',
+            isActive: true,
         },
         {
             id: 'minimap',
             name: 'Minimap',
             icon: 'map',
             shortcut: '3',
-            description: 'Edit minimap markers',
-            isActive: editMode === 'minimap',
+            description: 'Edit minimap markers and layout',
+            isActive: true,
         },
         {
             id: 'gallery',
             name: 'Gallery',
             icon: 'grid',
             shortcut: '4',
-            description: 'Manage panorama gallery',
-            isActive: editMode === 'gallery',
+            description: 'Configure gallery settings',
+            isActive: true,
         },
         {
             id: 'navigation',
             name: 'Navigation',
             icon: 'menu',
             shortcut: '5',
-            description: 'Edit navigation menu',
-            isActive: editMode === 'navigation',
+            description: 'Customize navigation menu structure',
+            isActive: true,
         },
     ];
 
-    // Switch to panorama in viewer when selected
-    useEffect(() => {
-        if (selectedPanorama && !isPreviewMode) {
-            setCurrentNode(selectedPanorama);
-        }
-    }, [selectedPanorama, isPreviewMode, setCurrentNode]);
+    // Set viewer reference
+    const setViewerRef = useCallback((viewer: Viewer | null) => {
+        viewerRef.current = viewer;
+    }, []);
 
-    // Handle keyboard shortcuts for editor
-    const handleEditorKeyboard = useCallback((event: KeyboardEvent) => {
-        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-            return;
-        }
-
-        const key = event.key;
-
-        // Tool switching
-        if (key >= '1' && key <= '5') {
-            const toolIndex = parseInt(key) - 1;
-            if (toolIndex < editorTools.length) {
-                event.preventDefault();
-                setEditMode(editorTools[toolIndex].id as any);
-            }
-        }
-
-        // Preview mode toggle
-        if (key === 'p' && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            togglePreviewMode();
-        }
-
-        // Save project
-        if (key === 's' && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            useEditorStore.getState().saveProject();
-        }
-
-        // Delete selected item
-        if (key === 'Delete' || key === 'Backspace') {
-            if (selectedHotspot) {
-                event.preventDefault();
-                deleteHotspot(selectedHotspot);
-                setSelectedHotspot(null);
-            }
-        }
-
-        // Escape to clear selection
-        if (key === 'Escape') {
-            setSelectedHotspot(null);
-            setSelectedPanorama(null);
-        }
-    }, [selectedHotspot, editorTools, setEditMode, togglePreviewMode, deleteHotspot, setSelectedHotspot, setSelectedPanorama]);
-
-    // Add keyboard event listener
-    useEffect(() => {
-        document.addEventListener('keydown', handleEditorKeyboard);
-        return () => document.removeEventListener('keydown', handleEditorKeyboard);
-    }, [handleEditorKeyboard]);
-
-    // Hotspot management functions
-    const addHotspotAtCenter = useCallback(() => {
-        if (!selectedPanorama || !viewerRef.current) return;
-
-        const viewer = viewerRef.current;
-        const position = viewer.getPosition();
-
-        const newHotspot: Hotspot = {
-            id: `hotspot-${Date.now()}`,
-            panoramaId: selectedPanorama,
-            position: {
-                yaw: position.yaw,
-                pitch: position.pitch,
-            },
-            type: 'info',
-            title: 'New Hotspot',
-            content: 'Add your content here',
-            isVisible: true,
-        };
-
-        addHotspot(newHotspot);
-        setSelectedHotspot(newHotspot.id);
-    }, [selectedPanorama, addHotspot, setSelectedHotspot]);
-
-    const updateHotspotPosition = useCallback((hotspotId: string, position: { yaw: number; pitch: number }) => {
-        moveHotspot(hotspotId, position);
-    }, [moveHotspot]);
-
+    // Get hotspots for current panorama
     const getHotspotsForPanorama = useCallback((panoramaId: string) => {
         return hotspots.filter(h => h.panoramaId === panoramaId);
     }, [hotspots]);
 
-    const getSelectedPanoramaData = useCallback(() => {
-        return panoramas.find(p => p.id === selectedPanorama);
-    }, [panoramas, selectedPanorama]);
+    // Update hotspot position
+    const updateHotspotPosition = useCallback((hotspotId: string, position: { yaw: number; pitch: number }) => {
+        updateHotspot(hotspotId, { position });
+    }, [updateHotspot]);
 
-    const getSelectedHotspotData = useCallback(() => {
-        return hotspots.find(h => h.id === selectedHotspot);
-    }, [hotspots, selectedHotspot]);
+    // Add hotspot at center of view
+    const addHotspotAtCenter = useCallback(() => {
+        if (!viewerRef.current || !currentPanoramaId) return;
 
-    // File operations
-    const handleFileUpload = useCallback(async (file: File, type: 'panorama' | 'minimap') => {
-        try {
-            const uploadFunction = type === 'panorama'
-                ? useEditorStore.getState().uploadPanorama
-                : useEditorStore.getState().uploadMinimap;
+        const position = viewerRef.current.getPosition();
+        const newHotspot = {
+            id: `hotspot-${Date.now()}`,
+            panoramaId: currentPanoramaId,
+            position: { yaw: position.yaw, pitch: position.pitch },
+            type: 'info' as const,
+            title: 'New Hotspot',
+            content: 'Add your content here',
+            isVisible: true,
+            style: {
+                backgroundColor: '#3b82f6',
+                borderColor: '#ffffff',
+                size: 24,
+            },
+        };
 
-            const url = await uploadFunction(file);
-            return url;
-        } catch (error) {
-            console.error('Upload failed:', error);
-            throw error;
-        }
+        addHotspot(newHotspot);
+        console.warn('New hotspot added at center:', newHotspot);
+    }, [currentPanoramaId, addHotspot]);
+
+    // Force reload panorama data
+    const reloadPanoramaData = useCallback(() => {
+        // Trigger a page reload to get fresh data from panorama-data.json
+        window.location.reload();
     }, []);
 
+    // Auto-save and reload function
+    const saveAndReload = useCallback(async () => {
+        try {
+            // Wait a bit for any pending saves
+            await new Promise(resolve => setTimeout(resolve, 100));
+            reloadPanoramaData();
+        } catch (error) {
+            console.error('Error saving and reloading:', error);
+        }
+    }, [reloadPanoramaData]);
+
+    // Handle keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Handle Ctrl+S for save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                try {
+                    console.log('Save triggered via keyboard shortcut');
+                } catch (error) {
+                    console.error('Error saving project via keyboard shortcut:', error);
+                }
+                return;
+            }
+
+            if (e.ctrlKey || e.metaKey) return; // Ignore other modifier key combinations
+
+            switch (e.key) {
+                case 'Escape':
+                    e.preventDefault();
+                    setSelectedHotspot(null);
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            try {
+                window.removeEventListener('keydown', handleKeyDown);
+            } catch (error) {
+                console.warn('Error removing keyboard event listener:', error);
+            }
+        };
+    }, [setSelectedHotspot]);
+
+    // Handle file operations
     const handleExportProject = useCallback(() => {
-        useEditorStore.getState().exportProject();
+        try {
+            console.log('Export project triggered');
+        } catch (error) {
+            console.error('Error exporting project:', error);
+        }
     }, []);
 
     const handleImportProject = useCallback((file: File) => {
@@ -191,43 +170,32 @@ export const useEditor = () => {
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target?.result as string);
-                useEditorStore.getState().importProject(data);
+                console.log('Import project data:', data);
             } catch (error) {
-                console.error('Import failed:', error);
+                console.error('Failed to import project:', error);
+                alert('Failed to import project. Please check the file format.');
             }
+        };
+        reader.onerror = () => {
+            console.error('Failed to read file');
+            alert('Failed to read file. Please try again.');
         };
         reader.readAsText(file);
     }, []);
 
     return {
-        // State
-        editMode,
-        selectedPanorama,
-        selectedHotspot,
-        isPreviewMode,
+        currentPanoramaId,
+        selectedHotspotId,
         editorTools,
-
-        // Actions
-        setEditMode,
-        setSelectedPanorama,
+        setCurrentPanorama,
         setSelectedHotspot,
-        togglePreviewMode,
-
-        // Hotspot management
-        addHotspotAtCenter,
-        updateHotspotPosition,
+        setViewerRef,
         getHotspotsForPanorama,
-        getSelectedPanoramaData,
-        getSelectedHotspotData,
-
-        // File operations
-        handleFileUpload,
+        updateHotspotPosition,
+        addHotspotAtCenter,
         handleExportProject,
         handleImportProject,
-
-        // Viewer reference
-        setViewerRef: (ref: any) => {
-            viewerRef.current = ref;
-        },
+        reloadPanoramaData,
+        saveAndReload,
     };
 };

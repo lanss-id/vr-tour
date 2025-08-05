@@ -1,77 +1,44 @@
-export interface EditorState {
-    editMode: 'panorama' | 'minimap' | 'gallery' | 'navigation' | 'hotspot';
-    selectedPanorama: string | null;
-    selectedCategory: string | null;
-    selectedHotspot: string | null;
-    isDirty: boolean;
-    isPreviewMode: boolean;
-    isFullscreen: boolean;
-
-    // CRUD operations
-    panoramas: PanoramaNode[];
-    categories: Category[];
-    hotspots: Hotspot[];
-    minimapData: MinimapData;
-
-    // Actions
-    setEditMode: (mode: EditorState['editMode']) => void;
-    setSelectedPanorama: (id: string | null) => void;
-    setSelectedCategory: (id: string | null) => void;
-    setSelectedHotspot: (id: string | null) => void;
-    setDirty: (dirty: boolean) => void;
-    togglePreviewMode: () => void;
-    toggleFullscreen: () => void;
-
-    // Panorama CRUD
-    addPanorama: (panorama: PanoramaNode) => void;
-    updatePanorama: (id: string, updates: Partial<PanoramaNode>) => void;
-    deletePanorama: (id: string) => void;
-    duplicatePanorama: (id: string) => void;
-
-    // Category CRUD
-    addCategory: (category: Category) => void;
-    updateCategory: (id: string, updates: Partial<Category>) => void;
-    deleteCategory: (id: string) => void;
-
-    // Hotspot CRUD
-    addHotspot: (hotspot: Hotspot) => void;
-    updateHotspot: (id: string, updates: Partial<Hotspot>) => void;
-    deleteHotspot: (id: string) => void;
-    moveHotspot: (id: string, position: { yaw: number; pitch: number }) => void;
-
-    // Minimap CRUD
-    updateMinimapData: (data: Partial<MinimapData>) => void;
-    addMinimapMarker: (marker: MinimapMarker) => void;
-    updateMinimapMarker: (id: string, updates: Partial<MinimapMarker>) => void;
-    deleteMinimapMarker: (id: string) => void;
-    moveMinimapMarker: (id: string, position: { x: number; y: number }) => void;
-
-    // File operations
-    uploadPanorama: (file: File) => Promise<string>;
-    uploadMinimap: (file: File) => Promise<string>;
-    exportProject: () => void;
-    importProject: (data: ProjectData) => void;
-    saveProject: () => void;
-    loadProject: () => void;
-}
-
 export interface Hotspot {
     id: string;
     panoramaId: string;
+    title: string;
+    content?: string;
+    type: 'info' | 'link' | 'custom';
+    targetNodeId?: string;
     position: {
         yaw: number;
         pitch: number;
-    };
-    type: 'info' | 'link' | 'custom';
-    title: string;
-    content?: string;
-    targetNodeId?: string;
-    style?: {
-        backgroundColor?: string;
-        borderColor?: string;
-        size?: number;
+    } | {
+        textureX: number;
+        textureY: number;
     };
     isVisible: boolean;
+    style?: {
+        size?: number;
+        backgroundColor?: string;
+        borderColor?: string;
+        icon?: string;
+        opacity?: number;
+    };
+}
+
+export interface EditorState {
+    currentPanoramaId: string;
+    hotspots: Hotspot[];
+    isDirty: boolean;
+    isEditing: boolean;
+    selectedHotspotId: string | null;
+
+    // Actions
+    setCurrentPanorama: (panoramaId: string) => void;
+    addHotspot: (hotspot: Hotspot) => void;
+    updateHotspot: (id: string, updates: Partial<Hotspot>) => void;
+    deleteHotspot: (id: string) => void;
+    duplicateHotspot: (id: string) => void;
+    setSelectedHotspot: (id: string | null) => void;
+    setIsEditing: (isEditing: boolean) => void;
+    setIsDirty: (isDirty: boolean) => void;
+    clearHotspots: () => void;
 }
 
 export interface ProjectData {
@@ -79,6 +46,7 @@ export interface ProjectData {
     categories: Category[];
     hotspots: Hotspot[];
     minimapData: MinimapData;
+    navigationMenu: NavigationMenuData;
     metadata: {
         name: string;
         version: string;
@@ -110,6 +78,53 @@ export interface DragDropState {
     draggedItem: any;
     dropTarget: any;
     dragType: 'panorama' | 'hotspot' | 'marker' | 'category';
+}
+
+// Navigation Menu Types
+export interface NavigationItem {
+    id: string;
+    title: string;
+    subtitle?: string;
+    thumbnail: string;
+    panoramaId: string;
+    order: number;
+    isVisible: boolean;
+    style?: {
+        backgroundColor?: string;
+        textColor?: string;
+        borderColor?: string;
+    };
+}
+
+export interface NavigationCategory {
+    id: string;
+    title: string;
+    subtitle?: string;
+    icon: string;
+    order: number;
+    isVisible: boolean;
+    items: NavigationItem[];
+    style?: {
+        backgroundColor?: string;
+        textColor?: string;
+        borderColor?: string;
+    };
+}
+
+export interface NavigationMenuData {
+    categories: NavigationCategory[];
+    layout: 'grid' | 'list' | 'cards';
+    theme: 'light' | 'dark' | 'auto';
+    showThumbnails: boolean;
+    showSubtitles: boolean;
+    maxItemsPerRow: number;
+    style?: {
+        backgroundColor?: string;
+        textColor?: string;
+        borderColor?: string;
+        borderRadius?: string;
+        shadow?: string;
+    };
 }
 
 // Import existing types

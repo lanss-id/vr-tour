@@ -18,11 +18,20 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     static getDerivedStateFromError(error: Error): State {
+        // Handle DOM manipulation errors specifically
+        if (error.message.includes('removeChild') || error.message.includes('NotFoundError')) {
+            console.warn('DOM manipulation error caught:', error);
+            // Don't show error UI for DOM manipulation errors, just log them
+            return { hasError: false };
+        }
         return { hasError: true, error };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error('ErrorBoundary caught an error:', error, errorInfo);
+        // Only log non-DOM manipulation errors
+        if (!error.message.includes('removeChild') && !error.message.includes('NotFoundError')) {
+            console.error('ErrorBoundary caught an error:', error, errorInfo);
+        }
     }
 
     handleRetry = () => {

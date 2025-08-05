@@ -1,305 +1,329 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { EditorState, Hotspot, ProjectData } from '../types/editor';
-import { PanoramaNode, Category, MinimapData, MinimapMarker } from '../types/panorama';
-import panoramaData from '../data/panorama-data.json';
+import { EditorState, NavigationMenuData, NavigationCategory, NavigationItem } from '../types/editor';
+import { PanoramaNode, Category, MinimapMarker, MinimapData } from '../types/panorama';
+import { useDataManager, getPanoramaById, getAllPanoramaIds } from '../utils/dataManager';
 
-// Mock data untuk development
-const mockCategories: Category[] = [
-    { id: 'drone', name: 'Drone View', icon: 'drone', order: 1, color: '#3b82f6' },
-    { id: 'entrance', name: 'Main Gate', icon: 'gate', order: 2, color: '#10b981' },
-    { id: 'unit-type', name: 'Unit Types', icon: 'building', order: 3, color: '#8b5cf6' },
-];
-
-const mockMinimapData: MinimapData = {
-    backgroundImage: '/minimap/sideplan.jpeg',
-    markers: panoramaData.map((node, index) => ({
+// Convert panorama data to PanoramaNode format
+const getMockPanoramas = (): PanoramaNode[] => {
+    const panoramas = useDataManager.getState().panoramas;
+    return panoramas.map((node: any) => ({
         id: node.id,
-        nodeId: node.id,
-        x: 20 + (index * 15) % 60,
-        y: 20 + Math.floor(index / 3) * 20,
-        label: node.name,
-    })),
+        panorama: node.panorama,
+        thumbnail: node.thumbnail,
+        name: node.name,
+        caption: node.caption,
+        links: node.links || [],
+        gps: [0, 0], // Default GPS coordinates
+    }));
 };
 
-const mockHotspots: Hotspot[] = [
-    {
-        id: 'hotspot-1',
-        panoramaId: 'kawasan-1',
-        position: { yaw: 0, pitch: 0 },
-        type: 'info',
-        title: 'Welcome Point',
-        content: 'Welcome to our virtual tour!',
-        isVisible: true,
-    },
+const mockCategories: Category[] = [
+    { id: 'drone', name: 'Drone View', icon: 'map-pin', order: 1, color: '#3b82f6' },
+    { id: 'entrance', name: 'Main Gate', icon: 'home', order: 2, color: '#10b981' },
+    { id: 'unit-types', name: 'Unit Types', icon: 'building', order: 3, color: '#8b5cf6' },
 ];
+
+// Initialize hotspots from data manager
+const initializeHotspots = () => {
+    const allHotspots: any[] = [];
+    const panoramas = useDataManager.getState().panoramas;
+
+    panoramas.forEach((panorama: any) => {
+        if (panorama.markers) {
+            panorama.markers.forEach((marker: any, index: number) => {
+                const targetPanorama = getPanoramaById(marker.nodeId);
+                allHotspots.push({
+                    id: `hotspot-${panorama.id}-${index}`,
+                    panoramaId: panorama.id,
+                    title: `Navigate to ${targetPanorama?.name || marker.nodeId}`,
+                    content: `Click to navigate to ${targetPanorama?.name || marker.nodeId}`,
+                    type: 'link' as const,
+                    targetNodeId: marker.nodeId,
+                    position: marker.position,
+                    isVisible: true,
+                    style: {
+                        size: 32,
+                        icon: '/icon/door-open.svg',
+                        opacity: 1,
+                    },
+                });
+            });
+        }
+    });
+
+    return allHotspots;
+};
+
+const getMockMinimapData = (): MinimapData => {
+    const panoramas = useDataManager.getState().panoramas;
+    return {
+        backgroundImage: '/minimap/sideplan.jpeg',
+        markers: panoramas.map((node, index) => ({
+            id: `marker-${node.id}`,
+            nodeId: node.id,
+            x: 20 + (index * 15) % 60,
+            y: 20 + Math.floor(index / 3) * 20,
+            label: node.name,
+        })),
+    };
+};
+
+// Mock navigation menu data based on the image structure
+const getMockNavigationMenu = (): NavigationMenuData => {
+    const panoramas = useDataManager.getState().panoramas;
+
+    return {
+        categories: [
+            {
+                id: 'main-gate',
+                title: 'Main Gate',
+                subtitle: 'Property entrance',
+                icon: 'home',
+                order: 1,
+                isVisible: true,
+                items: [
+                    {
+                        id: 'nav-main-gate',
+                        title: 'Main Gate',
+                        subtitle: 'Property entrance',
+                        thumbnail: '/panoramas/kawasan/Panorama 1.png',
+                        panoramaId: 'kawasan-1',
+                        order: 0,
+                        isVisible: true,
+                    },
+                ],
+            },
+            {
+                id: 'drone-view',
+                title: 'Drone View',
+                subtitle: 'Aerial perspective of the property',
+                icon: 'map-pin',
+                order: 2,
+                isVisible: true,
+                items: panoramas
+                    .filter((node: any) => node.id.startsWith('kawasan'))
+                    .map((node: any, index) => ({
+                        id: `nav-${node.id}`,
+                        title: node.name,
+                        subtitle: 'Drone view',
+                        thumbnail: node.thumbnail,
+                        panoramaId: node.id,
+                        order: index,
+                        isVisible: true,
+                    })),
+            },
+            {
+                id: 'unit-types',
+                title: 'Tipe Unit',
+                subtitle: 'Available unit types',
+                icon: 'building',
+                order: 3,
+                isVisible: true,
+                items: [
+                    {
+                        id: 'nav-type-swan',
+                        title: 'Livia 35',
+                        subtitle: '35 sqm',
+                        thumbnail: '/panoramas/type_35/vr interior 35 1.png',
+                        panoramaId: 'type35-1',
+                        order: 0,
+                        isVisible: true,
+                    },
+                    {
+                        id: 'nav-type-osprey',
+                        title: 'Salvia 45',
+                        subtitle: '45 sqm',
+                        thumbnail: '/panoramas/type_45/BEDROOM 1.png',
+                        panoramaId: 'type45-bedroom1',
+                        order: 1,
+                        isVisible: true,
+                    },
+                    {
+                        id: 'nav-type-albatros',
+                        title: 'Viola 60',
+                        subtitle: '60 sqm',
+                        thumbnail: '/panoramas/type_60/1st Floor DINING ROOM.png',
+                        panoramaId: 'type60-dining',
+                        order: 2,
+                        isVisible: true,
+                    },
+                ],
+            },
+        ],
+        layout: 'cards',
+        theme: 'light',
+        showThumbnails: true,
+        showSubtitles: true,
+        maxItemsPerRow: 3,
+        style: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            textColor: '#1f2937',
+            borderColor: '#e5e7eb',
+            borderRadius: '12px',
+            shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        },
+    };
+};
 
 export const useEditorStore = create<EditorState>()(
     devtools(
         persist(
             (set, get) => ({
                 // State
-                editMode: 'panorama',
-                selectedPanorama: null,
-                selectedCategory: null,
-                selectedHotspot: null,
+                currentPanoramaId: 'kawasan-1',
+                hotspots: initializeHotspots(),
                 isDirty: false,
-                isPreviewMode: false,
-                isFullscreen: false,
-
-                // Data
-                panoramas: panoramaData,
-                categories: mockCategories,
-                hotspots: mockHotspots,
-                minimapData: mockMinimapData,
+                isEditing: false,
+                selectedHotspotId: null,
 
                 // Actions
-                setEditMode: (mode) => set({ editMode: mode }),
-                setSelectedPanorama: (id) => set({ selectedPanorama: id }),
-                setSelectedCategory: (id) => set({ selectedCategory: id }),
-                setSelectedHotspot: (id) => set({ selectedHotspot: id }),
-                setDirty: (dirty) => set({ isDirty: dirty }),
-                togglePreviewMode: () => set((state) => ({ isPreviewMode: !state.isPreviewMode })),
-                toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
-
-                // Panorama CRUD
-                addPanorama: (panorama) => {
-                    set((state) => ({
-                        panoramas: [...state.panoramas, panorama],
-                        isDirty: true,
-                    }));
+                setCurrentPanorama: (panoramaId: string) => {
+                    set({ currentPanoramaId: panoramaId });
+                    // Sync with data manager
+                    useDataManager.getState().setCurrentPanorama(panoramaId);
                 },
 
-                updatePanorama: (id, updates) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map((p) =>
-                            p.id === id ? { ...p, ...updates } : p
-                        ),
-                        isDirty: true,
-                    }));
-                },
-
-                deletePanorama: (id) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.filter((p) => p.id !== id),
-                        hotspots: state.hotspots.filter((h) => h.panoramaId !== id),
-                        isDirty: true,
-                    }));
-                },
-
-                duplicatePanorama: (id) => {
-                    const panorama = get().panoramas.find((p) => p.id === id);
-                    if (panorama) {
-                        const duplicated = {
-                            ...panorama,
-                            id: `${panorama.id}-copy`,
-                            name: `${panorama.name} (Copy)`,
-                        };
-                        set((state) => ({
-                            panoramas: [...state.panoramas, duplicated],
-                            isDirty: true,
-                        }));
-                    }
-                },
-
-                // Category CRUD
-                addCategory: (category) => {
-                    set((state) => ({
-                        categories: [...state.categories, category],
-                        isDirty: true,
-                    }));
-                },
-
-                updateCategory: (id, updates) => {
-                    set((state) => ({
-                        categories: state.categories.map((c) =>
-                            c.id === id ? { ...c, ...updates } : c
-                        ),
-                        isDirty: true,
-                    }));
-                },
-
-                deleteCategory: (id) => {
-                    set((state) => ({
-                        categories: state.categories.filter((c) => c.id !== id),
-                        isDirty: true,
-                    }));
-                },
-
-                // Hotspot CRUD
-                addHotspot: (hotspot) => {
+                addHotspot: (hotspot: any) => {
                     set((state) => ({
                         hotspots: [...state.hotspots, hotspot],
                         isDirty: true,
                     }));
+
+                    // Sync with data manager if it's a link hotspot
+                    if (hotspot.type === 'link' && hotspot.targetNodeId) {
+                        useDataManager.getState().addLink(hotspot.panoramaId, {
+                            nodeId: hotspot.targetNodeId,
+                            position: hotspot.position
+                        });
+                    }
+
+                    console.log('Hotspot added:', hotspot);
                 },
 
-                updateHotspot: (id, updates) => {
+                updateHotspot: (id: string, updates: any) => {
                     set((state) => ({
                         hotspots: state.hotspots.map((h) =>
                             h.id === id ? { ...h, ...updates } : h
                         ),
                         isDirty: true,
                     }));
+
+                    // Sync with data manager if it's a link hotspot
+                    const hotspot = get().hotspots.find(h => h.id === id);
+                    if (hotspot && hotspot.type === 'link' && hotspot.targetNodeId && updates.position) {
+                        useDataManager.getState().updateLink(hotspot.panoramaId, hotspot.targetNodeId, {
+                            position: updates.position
+                        });
+                    }
+
+                    console.log('Hotspot updated:', id, updates);
                 },
 
-                deleteHotspot: (id) => {
+                deleteHotspot: (id: string) => {
+                    const hotspot = get().hotspots.find(h => h.id === id);
+
                     set((state) => ({
                         hotspots: state.hotspots.filter((h) => h.id !== id),
                         isDirty: true,
                     }));
+
+                    // Sync with data manager if it's a link hotspot
+                    if (hotspot && hotspot.type === 'link' && hotspot.targetNodeId) {
+                        useDataManager.getState().deleteLink(hotspot.panoramaId, hotspot.targetNodeId);
+                    }
+
+                    console.log('Hotspot deleted:', id);
                 },
 
-                moveHotspot: (id, position) => {
-                    set((state) => ({
-                        hotspots: state.hotspots.map((h) =>
-                            h.id === id ? { ...h, position } : h
-                        ),
-                        isDirty: true,
-                    }));
-                },
-
-                // Minimap CRUD
-                updateMinimapData: (data) => {
-                    set((state) => ({
-                        minimapData: { ...state.minimapData, ...data },
-                        isDirty: true,
-                    }));
-                },
-
-                addMinimapMarker: (marker) => {
-                    set((state) => ({
-                        minimapData: {
-                            ...state.minimapData,
-                            markers: [...state.minimapData.markers, marker],
-                        },
-                        isDirty: true,
-                    }));
-                },
-
-                updateMinimapMarker: (id, updates) => {
-                    set((state) => ({
-                        minimapData: {
-                            ...state.minimapData,
-                            markers: state.minimapData.markers.map((m) =>
-                                m.id === id ? { ...m, ...updates } : m
-                            ),
-                        },
-                        isDirty: true,
-                    }));
-                },
-
-                deleteMinimapMarker: (id) => {
-                    set((state) => ({
-                        minimapData: {
-                            ...state.minimapData,
-                            markers: state.minimapData.markers.filter((m) => m.id !== id),
-                        },
-                        isDirty: true,
-                    }));
-                },
-
-                moveMinimapMarker: (id, position) => {
-                    set((state) => ({
-                        minimapData: {
-                            ...state.minimapData,
-                            markers: state.minimapData.markers.map((m) =>
-                                m.id === id ? { ...m, ...position } : m
-                            ),
-                        },
-                        isDirty: true,
-                    }));
-                },
-
-                // File operations
-                uploadPanorama: async (file) => {
-                    // Simulate file upload
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            const url = URL.createObjectURL(file);
-                            resolve(url);
-                        }, 1000);
-                    });
-                },
-
-                uploadMinimap: async (file) => {
-                    // Simulate file upload
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            const url = URL.createObjectURL(file);
-                            resolve(url);
-                        }, 1000);
-                    });
-                },
-
-                exportProject: () => {
-                    const state = get();
-                    const projectData: ProjectData = {
-                        panoramas: state.panoramas,
-                        categories: state.categories,
-                        hotspots: state.hotspots,
-                        minimapData: state.minimapData,
-                        metadata: {
-                            name: 'VR Panorama Project',
-                            version: '1.0.0',
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                        },
-                    };
-
-                    const blob = new Blob([JSON.stringify(projectData, null, 2)], {
-                        type: 'application/json',
-                    });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'panorama-project.json';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                },
-
-                importProject: (data) => {
-                    set({
-                        panoramas: data.panoramas,
-                        categories: data.categories,
-                        hotspots: data.hotspots,
-                        minimapData: data.minimapData,
-                        isDirty: false,
-                    });
-                },
-
-                saveProject: () => {
-                    const state = get();
-                    localStorage.setItem('panorama-project', JSON.stringify({
-                        panoramas: state.panoramas,
-                        categories: state.categories,
-                        hotspots: state.hotspots,
-                        minimapData: state.minimapData,
-                    }));
-                    set({ isDirty: false });
-                },
-
-                loadProject: () => {
-                    const saved = localStorage.getItem('panorama-project');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        set({
-                            panoramas: data.panoramas,
-                            categories: data.categories,
-                            hotspots: data.hotspots,
-                            minimapData: data.minimapData,
-                            isDirty: false,
-                        });
+                duplicateHotspot: (id: string) => {
+                    const hotspot = get().hotspots.find((h) => h.id === id);
+                    if (hotspot) {
+                        const duplicated = {
+                            ...hotspot,
+                            id: `${hotspot.id}-copy-${Date.now()}`,
+                            title: `${hotspot.title} (Copy)`,
+                        };
+                        set((state) => ({
+                            hotspots: [...state.hotspots, duplicated],
+                            isDirty: true,
+                        }));
                     }
                 },
+
+                setSelectedHotspot: (id: string | null) => set({ selectedHotspotId: id }),
+                setIsEditing: (isEditing: boolean) => set({ isEditing }),
+                setIsDirty: (isDirty: boolean) => set({ isDirty }),
+                clearHotspots: () => set({ hotspots: [] }),
+
+                // Additional data for backward compatibility
+                panoramas: getMockPanoramas(),
+                categories: mockCategories,
+                minimapData: getMockMinimapData(),
+                navigationMenu: getMockNavigationMenu(),
+
+                // Additional actions for backward compatibility
+                setEditMode: (mode: string) => set({}),
+                setSelectedPanorama: (id: string | null) => {
+                    const panoramaId = id || 'kawasan-1';
+                    set({ currentPanoramaId: panoramaId });
+                    useDataManager.getState().setCurrentPanorama(panoramaId);
+                },
+                setSelectedCategory: (id: string | null) => set({}),
+                togglePreviewMode: () => set({}),
+                toggleFullscreen: () => set({}),
+                addPanorama: (panorama: any) => {
+                    useDataManager.getState().addPanorama(panorama);
+                },
+                updatePanorama: (id: string, updates: any) => {
+                    useDataManager.getState().updatePanorama(id, updates);
+                },
+                deletePanorama: (id: string) => {
+                    useDataManager.getState().deletePanorama(id);
+                },
+                duplicatePanorama: (id: string) => set({}),
+                addCategory: (category: any) => set({}),
+                updateCategory: (id: string, updates: any) => set({}),
+                deleteCategory: (id: string) => set({}),
+                moveHotspot: (id: string, position: any) => set({}),
+                updateMinimapData: (data: any) => set({}),
+                addMinimapMarker: (marker: any) => set({}),
+                updateMinimapMarker: (id: string, updates: any) => set({}),
+                deleteMinimapMarker: (id: string) => set({}),
+                moveMinimapMarker: (id: string, position: any) => set({}),
+                addNavigationCategory: (category: any) => set({}),
+                updateNavigationCategory: (id: string, updates: any) => set({}),
+                deleteNavigationCategory: (id: string) => set({}),
+                addNavigationItem: (categoryId: string, item: any) => set({}),
+                updateNavigationItem: (categoryId: string, itemId: string, updates: any) => set({}),
+                deleteNavigationItem: (categoryId: string, itemId: string) => set({}),
+                reorderNavigationItems: (categoryId: string, itemIds: string[]) => set({}),
+                updateNavigationMenu: (updates: any) => set({}),
+                uploadPanorama: async (file: File) => Promise.resolve(''),
+                uploadMinimap: async (file: File) => Promise.resolve(''),
+                exportProject: () => {
+                    return useDataManager.getState().exportData();
+                },
+                importProject: (data: any) => {
+                    useDataManager.getState().importData(data);
+                },
+                saveProject: () => {
+                    useDataManager.getState().saveToStorage();
+                    set({ isDirty: false });
+                },
+                loadProject: () => {
+                    useDataManager.getState().loadFromStorage();
+                },
+                initializeStore: () => set({}),
             }),
             {
                 name: 'editor-store',
                 partialize: (state) => ({
-                    panoramas: state.panoramas,
-                    categories: state.categories,
+                    currentPanoramaId: state.currentPanoramaId,
                     hotspots: state.hotspots,
-                    minimapData: state.minimapData,
+                    isDirty: state.isDirty,
+                    isEditing: state.isEditing,
+                    selectedHotspotId: state.selectedHotspotId,
                 }),
             }
         )

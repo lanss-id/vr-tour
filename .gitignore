@@ -18,6 +18,7 @@ build/
 .env.production.local
 
 # IDE and editor files
+.github/
 .vscode/
 .idea/
 *.swp

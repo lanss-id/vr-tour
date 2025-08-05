@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Map, Upload, Trash2, Plus, Settings } from 'lucide-react';
 import { useEditorStore } from '../../store/editorStore';
+import { useViewerSupabase } from '../../hooks/useViewerSupabase';
 import { MinimapMarker } from '../../types/panorama';
 import Button from '../common/Button';
 
 const MinimapEditor: React.FC = () => {
     const { minimapData, updateMinimapData, addMinimapMarker, updateMinimapMarker, deleteMinimapMarker } = useEditorStore();
+    const { panoramas, loading, error: supabaseError } = useViewerSupabase();
 
     const [isDragging, setIsDragging] = useState(false);
     const [draggedMarker, setDraggedMarker] = useState<string | null>(null);
@@ -13,6 +15,9 @@ const MinimapEditor: React.FC = () => {
     const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
 
     const minimapRef = useRef<HTMLDivElement>(null);
+
+    // Ensure minimapData.markers exists
+    const markers = minimapData?.markers || [];
 
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -49,7 +54,7 @@ const MinimapEditor: React.FC = () => {
 
         const rect = minimapRef.current?.getBoundingClientRect();
         if (rect) {
-            const marker = minimapData.markers.find(m => m.id === markerId);
+            const marker = markers.find(m => m.id === markerId);
             if (marker) {
                 const markerX = (marker.x / 100) * rect.width;
                 const markerY = (marker.y / 100) * rect.height;
@@ -86,7 +91,34 @@ const MinimapEditor: React.FC = () => {
         }
     };
 
-    const selectedMarkerData = minimapData.markers.find(m => m.id === selectedMarker);
+    const selectedMarkerData = markers.find(m => m.id === selectedMarker);
+
+    // Show loading state
+    if (loading) {
+        return (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                <div className="text-center py-8">
+                    <div className="text-gray-600 text-lg font-semibold mb-2">Memuat data...</div>
+                    <div className="text-sm text-gray-500">Mengambil data panorama dari Supabase</div>
+                </div>
+            </div>
+        );
+    }
+
+    // Show error state
+    if (supabaseError) {
+        return (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                <div className="text-center py-8">
+                    <div className="text-red-600 text-lg font-semibold mb-2">Error</div>
+                    <div className="text-gray-600">{supabaseError}</div>
+                    <div className="text-sm text-gray-500 mt-2">
+                        Tidak dapat memuat data panorama dari Supabase
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
@@ -125,6 +157,14 @@ const MinimapEditor: React.FC = () => {
                 </div>
             </div>
 
+            {/* Panorama Info */}
+            <div className="bg-blue-50 rounded-lg p-3">
+                <div className="text-sm font-medium text-blue-800 mb-1">Data Panorama dari Supabase</div>
+                <div className="text-xs text-blue-600">
+                    Total panorama: {panoramas.length} | Markers: {markers.length}
+                </div>
+            </div>
+
             {/* Minimap Canvas */}
             <div className="relative">
                 <div
@@ -135,7 +175,7 @@ const MinimapEditor: React.FC = () => {
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
                 >
-                    {minimapData.backgroundImage && (
+                    {minimapData?.backgroundImage && (
                         <img
                             src={minimapData.backgroundImage}
                             alt="Site Plan"
@@ -143,8 +183,21 @@ const MinimapEditor: React.FC = () => {
                         />
                     )}
 
-                    {/* Markers */}
-                    {minimapData.markers.map(marker => (
+                    {/* Panorama Markers */}
+                    {panoramas.map((panorama, index) => (
+                        <div
+                            key={panorama.id}
+                            className="absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 bg-green-500 hover:bg-green-600 shadow-md"
+                            style={{
+                                left: `${20 + (index * 15) % 60}%`,
+                                top: `${20 + Math.floor(index / 3) * 20}%`,
+                            }}
+                            title={panorama.name}
+                        />
+                    ))}
+
+                    {/* Editor Markers */}
+                    {markers.map(marker => (
                         <div
                             key={marker.id}
                             className={`absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 cursor-move transition-all duration-200 ${selectedMarker === marker.id
@@ -176,62 +229,70 @@ const MinimapEditor: React.FC = () => {
                             )}
                         </div>
                     ))}
+                </div>
 
-                    {/* Instructions */}
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                        Click to add marker • Drag to move • {minimapData.markers.length} markers
-                    </div>
+                {/* Instructions */}
+                <div className="mt-2 text-xs text-gray-500">
+                    <p>• Klik untuk menambah marker baru</p>
+                    <p>• Drag marker untuk memindahkan posisi</p>
+                    <p>• Hijau = panorama dari Supabase, Biru = marker editor</p>
                 </div>
             </div>
 
-            {/* Marker Properties */}
+            {/* Marker Editor Panel */}
             {selectedMarkerData && (
-                <div className="border-t border-gray-200 pt-4">
-                    <div className="text-sm font-medium text-gray-700 mb-3">Marker Properties</div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-800 mb-3">Edit Marker</h3>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Label</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Label
+                            </label>
                             <input
                                 type="text"
                                 value={selectedMarkerData.label}
                                 onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { label: e.target.value })}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">X Position</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    value={selectedMarkerData.x.toFixed(1)}
-                                    onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { x: parseFloat(e.target.value) })}
-                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Y Position</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="100"
-                                    value={selectedMarkerData.y.toFixed(1)}
-                                    onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { y: parseFloat(e.target.value) })}
-                                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Linked Panorama</label>
-                            <select
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Node ID
+                            </label>
+                            <input
+                                type="text"
                                 value={selectedMarkerData.nodeId}
                                 onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { nodeId: e.target.value })}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Select panorama...</option>
-                                {/* Add panorama options here */}
-                            </select>
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    X Position (%)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={selectedMarkerData.x}
+                                    onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { x: parseFloat(e.target.value) })}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Y Position (%)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={selectedMarkerData.y}
+                                    onChange={(e) => updateMinimapMarker(selectedMarkerData.id, { y: parseFloat(e.target.value) })}
+                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

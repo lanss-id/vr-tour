@@ -11,6 +11,8 @@ export const useKeyboard = () => {
         toggleMinimap,
         toggleNavigation,
         hideAllOverlays,
+        toggleAllOverlays,
+        toggleInfoBlock,
         toggleFullscreen,
         clearStoredState
     } = useViewerStore();
@@ -39,6 +41,20 @@ export const useKeyboard = () => {
             case KEYBOARD_SHORTCUTS.FULLSCREEN:
                 event.preventDefault();
                 toggleFullscreen();
+                break;
+            case 'i':
+                event.preventDefault();
+                toggleInfoBlock();
+                break;
+            case 'escape':
+                event.preventDefault();
+                // Close info block if open, otherwise toggle all overlays
+                const { infoBlockVisible } = useViewerStore.getState();
+                if (infoBlockVisible) {
+                    toggleInfoBlock();
+                } else {
+                    toggleAllOverlays();
+                }
                 break;
             case 'r':
                 // Reset state with confirmation
@@ -91,14 +107,14 @@ export const useKeyboard = () => {
                 }
                 break;
             default:
-                // Handle hide all shortcuts
-                if (KEYBOARD_SHORTCUTS.HIDE_ALL.includes(key)) {
+                // Handle hide all shortcuts (excluding escape which is handled above)
+                if (KEYBOARD_SHORTCUTS.HIDE_ALL.includes(key) && key !== 'escape') {
                     event.preventDefault();
-                    hideAllOverlays();
+                    toggleAllOverlays();
                 }
                 break;
         }
-    }, [currentNodeId, setCurrentNode, toggleGallery, toggleMinimap, toggleNavigation, hideAllOverlays, toggleFullscreen, clearStoredState]);
+    }, [currentNodeId, setCurrentNode, toggleGallery, toggleMinimap, toggleNavigation, hideAllOverlays, toggleAllOverlays, toggleInfoBlock, toggleFullscreen, clearStoredState]);
 
     useEffect(() => {
         if (!FEATURES.KEYBOARD_SHORTCUTS) return;

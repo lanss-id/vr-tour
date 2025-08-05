@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { useDataManager, getPanoramaById } from '../utils/dataManager';
 
 interface ViewerState {
     currentNodeId: string;
@@ -8,6 +7,8 @@ interface ViewerState {
     controlsVisible: boolean;
     isFullscreen: boolean;
     navigationVisible: boolean;
+    allOverlaysHidden: boolean;
+    infoBlockVisible: boolean;
 
     // Actions
     setCurrentNode: (nodeId: string) => void;
@@ -17,69 +18,61 @@ interface ViewerState {
     toggleFullscreen: () => void;
     toggleNavigation: () => void;
     hideAllOverlays: () => void;
-    validateAndSetCurrentNode: (nodeId: string) => void;
-    resetToDefault: () => void;
-    clearStoredState: () => void;
+    toggleAllOverlays: () => void;
+    toggleInfoBlock: () => void;
+    validateAndSetCurrentNode: (nodeId: string, panoramas?: any[]) => void;
+    resetToDefault: (panoramas?: any[]) => void;
 }
 
 // Helper function to validate node ID
-const validateNodeId = (nodeId: string): string => {
-    const validNode = getPanoramaById(nodeId);
-    if (validNode) {
-        return nodeId;
+const validateNodeId = (nodeId: string, panoramas?: any[]): string => {
+    if (panoramas && panoramas.length > 0) {
+        const validNode = panoramas.find(p => p.id === nodeId);
+        if (validNode) {
+            return nodeId;
+        }
+        // Return first panorama as default if invalid
+        return panoramas[0].id;
     }
-    // Return 'kawasan-1' as default if invalid
-    return 'kawasan-1';
+    
+    // If no panoramas available, return empty string
+    return '';
 };
 
-// Get default node ID - always use 'kawasan-1' as default
-const getDefaultNodeId = (): string => {
-    return 'kawasan-1';
-};
-
-// Clear any stored state from localStorage
-const clearStoredViewerState = () => {
-    try {
-        // Remove any stored viewer state
-        localStorage.removeItem('viewer-store');
-        localStorage.removeItem('panorama-viewer-state');
-        console.log('Cleared stored viewer state');
-    } catch (error) {
-        console.warn('Error clearing stored state:', error);
+// Get default node ID
+const getDefaultNodeId = (panoramas?: any[]): string => {
+    if (panoramas && panoramas.length > 0) {
+        return panoramas[0].id;
     }
+    return '';
 };
 
 export const useViewerStore = create<ViewerState>((set, get) => ({
-    // Initialize with first panorama instead of hardcoded 'kawasan-1'
-    currentNodeId: getDefaultNodeId(),
+    // Initialize with empty string - will be set when panoramas load
+    currentNodeId: '',
     minimapVisible: true,
     galleryVisible: false,
     controlsVisible: true,
     isFullscreen: false,
     navigationVisible: false,
+    allOverlaysHidden: false,
+    infoBlockVisible: false,
 
     setCurrentNode: (nodeId) => {
-        const validatedNodeId = validateNodeId(nodeId);
-        console.log('Setting current node to:', validatedNodeId);
-        set({ currentNodeId: validatedNodeId });
-
-        // Sync with data manager
-        useDataManager.getState().setCurrentPanorama(validatedNodeId);
+        console.log('Setting current node to:', nodeId);
+        set({ currentNodeId: nodeId });
     },
 
-    validateAndSetCurrentNode: (nodeId) => {
-        const validatedNodeId = validateNodeId(nodeId);
+    validateAndSetCurrentNode: (nodeId, panoramas) => {
+        const validatedNodeId = validateNodeId(nodeId, panoramas);
         if (validatedNodeId !== get().currentNodeId) {
             console.log('Validating and setting current node to:', validatedNodeId);
             set({ currentNodeId: validatedNodeId });
-
-            // Sync with data manager
-            useDataManager.getState().setCurrentPanorama(validatedNodeId);
         }
     },
 
-    resetToDefault: () => {
-        const defaultNodeId = getDefaultNodeId();
+    resetToDefault: (panoramas) => {
+        const defaultNodeId = getDefaultNodeId(panoramas);
         console.log('Resetting to default node:', defaultNodeId);
         set({
             currentNodeId: defaultNodeId,
@@ -87,28 +80,10 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
             galleryVisible: false,
             controlsVisible: true,
             isFullscreen: false,
-            navigationVisible: false
+            navigationVisible: false,
+            allOverlaysHidden: false,
+            infoBlockVisible: false
         });
-
-        // Sync with data manager
-        useDataManager.getState().setCurrentPanorama(defaultNodeId);
-    },
-
-    clearStoredState: () => {
-        clearStoredViewerState();
-        const defaultNodeId = getDefaultNodeId();
-        console.log('Clearing stored state and resetting to:', defaultNodeId);
-        set({
-            currentNodeId: defaultNodeId,
-            minimapVisible: true,
-            galleryVisible: false,
-            controlsVisible: true,
-            isFullscreen: false,
-            navigationVisible: false
-        });
-
-        // Sync with data manager
-        useDataManager.getState().setCurrentPanorama(defaultNodeId);
     },
 
     toggleMinimap: () => set((state) => ({ minimapVisible: !state.minimapVisible })),
@@ -121,4 +96,6 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
         galleryVisible: false,
         navigationVisible: false
     }),
+    toggleAllOverlays: () => set((state) => ({ allOverlaysHidden: !state.allOverlaysHidden })),
+    toggleInfoBlock: () => set((state) => ({ infoBlockVisible: !state.infoBlockVisible })),
 }));

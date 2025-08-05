@@ -1,99 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import {
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
     Grid,
     Map,
     EyeOff,
     Maximize,
     Eye,
-    Minimize,
-    Play,
-    Pause,
-    Volume2,
-    RotateCcw
+    Minimize
 } from 'lucide-react';
 import { useViewerStore } from '../../store/viewerStore';
+import { useViewerSupabase } from '../../hooks/useViewerSupabase';
 import Button from '../common/Button';
-import panoramaData from '../../data/panorama-data.json';
-
-// Global audio instance to prevent multiple instances
-let globalAudio: HTMLAudioElement | null = null;
 
 const ControlBar: React.FC = () => {
     const {
         controlsVisible,
         isFullscreen,
         currentNodeId,
+        allOverlaysHidden,
         setCurrentNode,
         toggleGallery,
         toggleMinimap,
         toggleControls,
         toggleFullscreen,
         hideAllOverlays,
-        clearStoredState
+        toggleAllOverlays
     } = useViewerStore();
 
-    const [isPlaying, setIsPlaying] = useState(false);
-
-    // Initialize audio once
-    useEffect(() => {
-        if (!globalAudio) {
-            globalAudio = new Audio('/music/bg-music.mp3');
-            globalAudio.loop = true;
-            globalAudio.volume = 0.3;
-
-            // Try to play immediately
-            globalAudio.play().then(() => {
-                setIsPlaying(true);
-                console.log('Music autoplay successful');
-            }).catch(() => {
-                console.log('Autoplay failed, waiting for user interaction');
-
-                // If autoplay fails, try to play on first user interaction
-                const handleFirstInteraction = () => {
-                    if (globalAudio && globalAudio.paused) {
-                        globalAudio.play().then(() => {
-                            setIsPlaying(true);
-                            console.log('Music started on user interaction');
-                        }).catch(err => {
-                            console.warn('Failed to play music on interaction:', err);
-                        });
-                    }
-
-                    // Remove event listeners after successful play
-                    document.removeEventListener('click', handleFirstInteraction);
-                    document.removeEventListener('keydown', handleFirstInteraction);
-                    document.removeEventListener('touchstart', handleFirstInteraction);
-                    document.removeEventListener('mousedown', handleFirstInteraction);
-                };
-
-                // Add multiple event listeners for different types of user interaction
-                document.addEventListener('click', handleFirstInteraction, { once: true });
-                document.addEventListener('keydown', handleFirstInteraction, { once: true });
-                document.addEventListener('touchstart', handleFirstInteraction, { once: true });
-                document.addEventListener('mousedown', handleFirstInteraction, { once: true });
-            });
-        }
-
-        // Update playing state based on global audio
-        const updatePlayingState = () => {
-            setIsPlaying(!globalAudio?.paused);
-        };
-
-        if (globalAudio) {
-            globalAudio.addEventListener('play', updatePlayingState);
-            globalAudio.addEventListener('pause', updatePlayingState);
-            updatePlayingState(); // Set initial state
-        }
-
-        return () => {
-            if (globalAudio) {
-                globalAudio.removeEventListener('play', updatePlayingState);
-                globalAudio.removeEventListener('pause', updatePlayingState);
-            }
-        };
-    }, []);
+    const { panoramas } = useViewerSupabase();
 
     const handleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -104,46 +40,62 @@ const ControlBar: React.FC = () => {
         toggleFullscreen();
     };
 
-    const handleMusicToggle = () => {
-        if (!globalAudio) return;
-
-        if (isPlaying) {
-            globalAudio.pause();
-        } else {
-            globalAudio.play().catch(err => {
-                console.warn('Failed to play music:', err);
-            });
-        }
-    };
-
     const handlePreviousPanorama = () => {
-        const currentIndex = panoramaData.findIndex(node => node.id === currentNodeId);
+        if (panoramas.length === 0) return;
+        
+        // If currentNodeId is empty, use first panorama
+        const currentId = currentNodeId || panoramas[0].id;
+        const currentIndex = panoramas.findIndex((node: any) => node.id === currentId);
+        
         if (currentIndex > 0) {
-            const previousNode = panoramaData[currentIndex - 1];
+            const previousNode = panoramas[currentIndex - 1];
             setCurrentNode(previousNode.id);
         } else {
             // Wrap to last panorama
-            const lastNode = panoramaData[panoramaData.length - 1];
+            const lastNode = panoramas[panoramas.length - 1];
             setCurrentNode(lastNode.id);
         }
     };
 
     const handleNextPanorama = () => {
-        const currentIndex = panoramaData.findIndex(node => node.id === currentNodeId);
-        if (currentIndex < panoramaData.length - 1) {
-            const nextNode = panoramaData[currentIndex + 1];
+        if (panoramas.length === 0) return;
+        
+        // If currentNodeId is empty, use first panorama
+        const currentId = currentNodeId || panoramas[0].id;
+        const currentIndex = panoramas.findIndex((node: any) => node.id === currentId);
+        
+        if (currentIndex < panoramas.length - 1) {
+            const nextNode = panoramas[currentIndex + 1];
             setCurrentNode(nextNode.id);
         } else {
-            // Wrap to 'kawasan-1' as default
-            setCurrentNode('kawasan-1');
+            // Wrap to first panorama
+            const firstNode = panoramas[0];
+            setCurrentNode(firstNode.id);
         }
     };
 
     const handleResetState = () => {
         if (confirm('Reset panorama state? This will clear any stored state and return to the first panorama.')) {
-            clearStoredState();
+            window.location.reload();
         }
     };
+
+    // Jika semua overlay tersembunyi, tampilkan tombol chevron up
+    if (allOverlaysHidden) {
+        return (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleAllOverlays}
+                    className="p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                    title="Show All Overlays"
+                >
+                    <ChevronUp className="w-6 h-6" />
+                </Button>
+            </div>
+        );
+    }
 
     if (!controlsVisible) return null;
 
@@ -183,31 +135,11 @@ const ControlBar: React.FC = () => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleMusicToggle}
-                    className="p-2"
-                    title={isPlaying ? "Pause Music (M)" : "Play Music (M)"}
-                >
-                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={hideAllOverlays}
+                    onClick={toggleAllOverlays}
                     className="p-2"
                     title="Hide All (H)"
                 >
                     <EyeOff className="w-5 h-5" />
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetState}
-                    className="p-2"
-                    title="Reset State"
-                >
-                    <RotateCcw className="w-5 h-5" />
                 </Button>
 
                 <Button

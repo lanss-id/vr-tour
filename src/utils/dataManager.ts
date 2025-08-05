@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import panoramaData from '../data/panorama-data.json';
 
 // Types
 export interface PanoramaData {
@@ -9,11 +8,13 @@ export interface PanoramaData {
     name: string;
     caption: string;
     markers?: PanoramaMarker[];
-    links?: PanoramaLink[];
+    hotspots?: HotspotData[];
 }
 
+// Data source type
+export type DataSource = 'json' | 'supabase';
+
 export interface PanoramaMarker {
-    id: string;
     nodeId: string;
     position: {
         textureX: number;
@@ -22,759 +23,403 @@ export interface PanoramaMarker {
         yaw: number;
         pitch: number;
     };
-    tooltip?: string;
-    content?: string;
 }
 
-export interface PanoramaLink {
-    nodeId: string;
-    position?: {
-        textureX: number;
-        textureY: number;
-    } | {
+export interface HotspotData {
+    id: string;
+    panoramaId: string;
+    position: {
         yaw: number;
         pitch: number;
     };
-}
-
-export interface CachedImage {
-    url: string;
-    data: string; // base64
-    timestamp: number;
-    size: number;
+    type: 'info' | 'link' | 'custom' | string;
+    title: string;
+    content: string;
+    isVisible: boolean;
+    style?: {
+        backgroundColor?: string;
+        size?: number;
+        icon?: string;
+    };
+    targetNodeId?: string;
 }
 
 export interface DataManagerState {
     // Data
     panoramas: PanoramaData[];
     currentPanoramaId: string;
-    imageCache: Map<string, CachedImage>;
-
-    // Cache settings
-    cacheExpiry: number; // 24 hours in milliseconds
-    maxCacheSize: number; // 50MB in bytes
 
     // Actions
     setCurrentPanorama: (id: string) => void;
-    updatePanorama: (id: string, updates: Partial<PanoramaData>) => void;
-    addPanorama: (panorama: PanoramaData) => void;
-    deletePanorama: (id: string) => void;
-
-    // Marker/Link management
-    addMarker: (panoramaId: string, marker: PanoramaMarker) => void;
-    updateMarker: (panoramaId: string, markerId: string, updates: Partial<PanoramaMarker>) => void;
-    deleteMarker: (panoramaId: string, markerId: string) => void;
-
-    addLink: (panoramaId: string, link: PanoramaLink) => void;
-    updateLink: (panoramaId: string, targetNodeId: string, updates: Partial<PanoramaLink>) => void;
-    deleteLink: (panoramaId: string, targetNodeId: string) => void;
-
-    // Image cache management
-    cacheImage: (url: string, data: string) => void;
-    getCachedImage: (url: string) => CachedImage | null;
-    clearExpiredCache: () => void;
-    clearAllCache: () => void;
-
-    // Data persistence
-    saveToStorage: () => void;
-    loadFromStorage: () => void;
-    exportData: () => string;
-    importData: (jsonData: string) => boolean;
+    getCurrentPanorama: () => PanoramaData | undefined;
+    getAllPanoramas: () => PanoramaData[];
+    getPanoramaById: (id: string) => PanoramaData | undefined;
 }
 
-// Default panorama data
-const defaultPanoramas: PanoramaData[] = [
-    {
-        id: "kawasan-1",
-        panorama: "/panoramas/kawasan/Panorama 1.png",
-        thumbnail: "/panoramas/kawasan/Panorama 1.png",
-        name: "Kawasan - Panorama 1",
-        caption: "Kawasan - Panorama 1",
-        markers: [
-            {
-                id: "lighthouse-marker",
-                nodeId: "kawasan-2",
-                position: { textureX: 2500, textureY: 1200 }
-            }
-        ],
-        links: [
-            { nodeId: "kawasan-2", position: { textureX: 1500, textureY: 780 } },
-            { nodeId: "kawasan-3", position: { textureX: 3000, textureY: 780 } }
-        ]
-    },
-    {
-        id: "kawasan-2",
-        panorama: "/panoramas/kawasan/Panorama 2.png",
-        thumbnail: "/panoramas/kawasan/Panorama 2.png",
-        name: "Kawasan - Panorama 2",
-        caption: "Kawasan - Panorama 2",
-        markers: [
-            {
-                id: "building-marker",
-                nodeId: "kawasan-3",
-                position: { textureX: 1500, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "kawasan-3", position: { textureX: 1200, textureY: 600 } },
-            { nodeId: "kawasan-1", position: { textureX: 2800, textureY: 900 } },
-            { nodeId: "type35-1", position: { textureX: 800, textureY: 1200 } }
-        ]
-    },
-    {
-        id: "kawasan-3",
-        panorama: "/panoramas/kawasan/Panorama 3.png",
-        thumbnail: "/panoramas/kawasan/Panorama 3.png",
-        name: "Kawasan - Panorama 3",
-        caption: "Kawasan - Panorama 3",
-        markers: [
-            {
-                id: "park-marker",
-                nodeId: "kawasan-2",
-                position: { textureX: 2000, textureY: 1000 }
-            }
-        ],
-        links: [
-            { nodeId: "kawasan-2", position: { textureX: 1600, textureY: 800 } }
-        ]
-    },
-    {
-        id: "type35-1",
-        panorama: "/panoramas/type_35/vr interior 35 1.png",
-        thumbnail: "/panoramas/type_35/vr interior 35 1.png",
-        name: "Type 35 - Interior 1",
-        caption: "Type 35 - Interior VR 1",
-        markers: [
-            {
-                id: "furniture-marker",
-                nodeId: "type35-2",
-                position: { textureX: 1500, textureY: 780 }
-            }
-        ],
-        links: [
-            { nodeId: "type35-2", position: { textureX: 1500, textureY: 780 } },
-            { nodeId: "type35-3", position: { textureX: 1000, textureY: 980 } }
-        ]
-    },
-    {
-        id: "type35-2",
-        panorama: "/panoramas/type_35/vr interior 35 2.png",
-        thumbnail: "/panoramas/type_35/vr interior 35 2.png",
-        name: "Type 35 - Interior 2",
-        caption: "Type 35 - Interior VR 2",
-        markers: [
-            {
-                id: "window-marker",
-                nodeId: "type35-3",
-                position: { textureX: 1200, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type35-3", position: { textureX: 1200, textureY: 600 } },
-            { nodeId: "type35-1", position: { textureX: 2800, textureY: 900 } },
-            { nodeId: "type35-4", position: { textureX: 800, textureY: 1200 } }
-        ]
-    },
-    {
-        id: "type35-3",
-        panorama: "/panoramas/type_35/vr interior 35 3.png",
-        thumbnail: "/panoramas/type_35/vr interior 35 3.png",
-        name: "Type 35 - Interior 3",
-        caption: "Type 35 - Interior VR 3",
-        markers: [
-            {
-                id: "lighting-marker",
-                nodeId: "type35-4",
-                position: { textureX: 1600, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "type35-4", position: { textureX: 1600, textureY: 800 } },
-            { nodeId: "type35-2", position: { textureX: 2400, textureY: 700 } },
-            { nodeId: "type35-5", position: { textureX: 400, textureY: 1000 } }
-        ]
-    },
-    {
-        id: "type35-4",
-        panorama: "/panoramas/type_35/vr interior 35 4.png",
-        thumbnail: "/panoramas/type_35/vr interior 35 4.png",
-        name: "Type 35 - Interior 4",
-        caption: "Type 35 - Interior VR 4",
-        markers: [
-            {
-                id: "storage-marker",
-                nodeId: "type35-5",
-                position: { textureX: 1800, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type35-5", position: { textureX: 1800, textureY: 600 } },
-            { nodeId: "type35-3", position: { textureX: 2200, textureY: 900 } }
-        ]
-    },
-    {
-        id: "type35-5",
-        panorama: "/panoramas/type_35/vr interior 35 5.png",
-        thumbnail: "/panoramas/type_35/vr interior 35 5.png",
-        name: "Type 35 - Interior 5",
-        caption: "Type 35 - Interior VR 5",
-        markers: [
-            {
-                id: "entrance-marker",
-                nodeId: "type35-4",
-                position: { textureX: 2000, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "type35-4", position: { textureX: 2000, textureY: 800 } }
-        ]
-    },
-    {
-        id: "type45-bedroom1",
-        panorama: "/panoramas/type_45/BEDROOM 1.png",
-        thumbnail: "/panoramas/type_45/BEDROOM 1.png",
-        name: "Type 45 - Bedroom 1",
-        caption: "Type 45 - Bedroom 1",
-        markers: [
-            {
-                id: "bed-marker",
-                nodeId: "type45-bedroom2",
-                position: { textureX: 1400, textureY: 700 }
-            }
-        ],
-        links: [
-            { nodeId: "type45-bedroom2", position: { textureX: 1400, textureY: 700 } },
-            { nodeId: "type45-livingroom", position: { textureX: 2600, textureY: 800 } }
-        ]
-    },
-    {
-        id: "type45-bedroom2",
-        panorama: "/panoramas/type_45/BEDROOM 2.png",
-        thumbnail: "/panoramas/type_45/BEDROOM 2.png",
-        name: "Type 45 - Bedroom 2",
-        caption: "Type 45 - Bedroom 2",
-        markers: [
-            {
-                id: "closet-marker",
-                nodeId: "type45-livingroom",
-                position: { textureX: 1200, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type45-livingroom", position: { textureX: 1200, textureY: 600 } },
-            { nodeId: "type45-bedroom1", position: { textureX: 2800, textureY: 900 } },
-            { nodeId: "type45-masterbed", position: { textureX: 800, textureY: 1200 } }
-        ]
-    },
-    {
-        id: "type45-livingroom",
-        panorama: "/panoramas/type_45/LIVING ROOM.png",
-        thumbnail: "/panoramas/type_45/LIVING ROOM.png",
-        name: "Type 45 - Living Room",
-        caption: "Type 45 - Living Room",
-        markers: [
-            {
-                id: "sofa-marker",
-                nodeId: "type45-masterbed",
-                position: { textureX: 1600, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "type45-masterbed", position: { textureX: 1600, textureY: 800 } },
-            { nodeId: "type45-bedroom2", position: { textureX: 2400, textureY: 700 } }
-        ]
-    },
-    {
-        id: "type45-masterbed",
-        panorama: "/panoramas/type_45/MASTER BED.png",
-        thumbnail: "/panoramas/type_45/MASTER BED.png",
-        name: "Type 45 - Master Bed",
-        caption: "Type 45 - Master Bed",
-        markers: [
-            {
-                id: "master-bed-marker",
-                nodeId: "type45-livingroom",
-                position: { textureX: 1800, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type45-livingroom", position: { textureX: 1800, textureY: 600 } }
-        ]
-    },
-    {
-        id: "type60-dining",
-        panorama: "/panoramas/type_60/1st Floor DINING ROOM.png",
-        thumbnail: "/panoramas/type_60/1st Floor DINING ROOM.png",
-        name: "Type 60 - Dining Room",
-        caption: "Type 60 - 1st Floor Dining Room",
-        markers: [
-            {
-                id: "dining-table-marker",
-                nodeId: "type60-livingroom",
-                position: { textureX: 1500, textureY: 780 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-livingroom", position: { textureX: 1500, textureY: 780 } }
-        ]
-    },
-    {
-        id: "type60-livingroom",
-        panorama: "/panoramas/type_60/1st Floor LIVINGROOM.png",
-        thumbnail: "/panoramas/type_60/1st Floor LIVINGROOM.png",
-        name: "Type 60 - Living Room",
-        caption: "Type 60 - 1st Floor Living Room",
-        markers: [
-            {
-                id: "living-area-marker",
-                nodeId: "type60-bedroom1",
-                position: { textureX: 1200, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-bedroom1", position: { textureX: 1200, textureY: 600 } },
-            { nodeId: "type60-dining", position: { textureX: 2800, textureY: 900 } }
-        ]
-    },
-    {
-        id: "type60-bedroom1",
-        panorama: "/panoramas/type_60/2nd Floor Bedroom 1.png",
-        thumbnail: "/panoramas/type_60/2nd Floor Bedroom 1.png",
-        name: "Type 60 - Bedroom 1",
-        caption: "Type 60 - 2nd Floor Bedroom 1",
-        markers: [
-            {
-                id: "bedroom1-marker",
-                nodeId: "type60-bedroom2",
-                position: { textureX: 1600, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-bedroom2", position: { textureX: 1600, textureY: 800 } },
-            { nodeId: "type60-livingroom", position: { textureX: 2400, textureY: 700 } }
-        ]
-    },
-    {
-        id: "type60-bedroom2",
-        panorama: "/panoramas/type_60/2nd Floor Bedroom 2.png",
-        thumbnail: "/panoramas/type_60/2nd Floor Bedroom 2.png",
-        name: "Type 60 - Bedroom 2",
-        caption: "Type 60 - 2nd Floor Bedroom 2",
-        markers: [
-            {
-                id: "bedroom2-marker",
-                nodeId: "type60-masterbed",
-                position: { textureX: 1800, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-masterbed", position: { textureX: 1800, textureY: 600 } },
-            { nodeId: "type60-bedroom1", position: { textureX: 2200, textureY: 900 } }
-        ]
-    },
-    {
-        id: "type60-masterbed",
-        panorama: "/panoramas/type_60/2nd Floor Masterbed.png",
-        thumbnail: "/panoramas/type_60/2nd Floor Masterbed.png",
-        name: "Type 60 - Master Bed",
-        caption: "Type 60 - 2nd Floor Master Bed",
-        markers: [
-            {
-                id: "master-bedroom-marker",
-                nodeId: "type60-wic",
-                position: { textureX: 2000, textureY: 800 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-wic", position: { textureX: 2000, textureY: 800 } },
-            { nodeId: "type60-bedroom2", position: { textureX: 1200, textureY: 1000 } }
-        ]
-    },
-    {
-        id: "type60-wic",
-        panorama: "/panoramas/type_60/WIC.png",
-        thumbnail: "/panoramas/type_60/WIC.png",
-        name: "Type 60 - WIC",
-        caption: "Type 60 - Walk In Closet",
-        markers: [
-            {
-                id: "closet-marker",
-                nodeId: "type60-masterbed",
-                position: { textureX: 1800, textureY: 600 }
-            }
-        ],
-        links: [
-            { nodeId: "type60-masterbed", position: { textureX: 1800, textureY: 600 } }
-        ]
+// Simple data manager tanpa memory management
+class SimpleDataManager {
+    private panoramas: PanoramaData[] = panoramaData;
+    private currentPanoramaId: string = 'kawasan-1';
+
+    constructor() {
+        // Load from localStorage if available
+        this.loadFromLocalStorage();
     }
-];
 
-// Helper functions
-const convertMapToObject = (map: Map<string, CachedImage>) => {
-    const obj: Record<string, CachedImage> = {};
-    map.forEach((value, key) => {
-        obj[key] = value;
-    });
-    return obj;
-};
+    // Set current panorama
+    setCurrentPanorama(id: string): void {
+        // Skip validation for empty ID (will be set when data loads)
+        if (!id) {
+            console.log('Skipping panorama set for empty ID');
+            return;
+        }
+        
+        const panorama = this.panoramas.find(p => p.id === id);
+        if (panorama) {
+            this.currentPanoramaId = id;
+            console.log('Current panorama set to:', id);
+        } else {
+            console.log('Panorama not found in local data:', id, '(this is expected when using database)');
+        }
+    }
 
-const convertObjectToMap = (obj: Record<string, CachedImage>): Map<string, CachedImage> => {
-    const map = new Map<string, CachedImage>();
-    Object.entries(obj).forEach(([key, value]) => {
-        map.set(key, value);
-    });
-    return map;
-};
+    // Get current panorama
+    getCurrentPanorama(): PanoramaData | undefined {
+        return this.panoramas.find(p => p.id === this.currentPanoramaId);
+    }
 
-// Create the data manager store
-export const useDataManager = create<DataManagerState>()(
-    devtools(
-        persist(
-            (set, get) => ({
-                // Initial state
-                panoramas: defaultPanoramas,
-                currentPanoramaId: 'kawasan-1',
-                imageCache: new Map<string, CachedImage>(),
-                cacheExpiry: 24 * 60 * 60 * 1000, // 24 hours
-                maxCacheSize: 50 * 1024 * 1024, // 50MB
+    // Get all panoramas
+    getAllPanoramas(): PanoramaData[] {
+        return this.panoramas;
+    }
 
-                // Panorama management
-                setCurrentPanorama: (id: string) => {
-                    const panorama = get().panoramas.find(p => p.id === id);
+    // Get panorama by ID
+    getPanoramaById(id: string): PanoramaData | undefined {
+        return this.panoramas.find(p => p.id === id);
+    }
+
+    // Get current panorama ID
+    getCurrentPanoramaId(): string {
+        return this.currentPanoramaId;
+    }
+
+    // Get panorama names for navigation
+    getPanoramaNames(): { id: string; name: string }[] {
+        return this.panoramas.map(p => ({ id: p.id, name: p.name }));
+    }
+
+    // Get markers for panorama
+    getMarkersForPanorama(panoramaId: string): PanoramaMarker[] {
+        const panorama = this.getPanoramaById(panoramaId);
+        return panorama?.markers || [];
+    }
+
+    // Get hotspots for panorama
+    getHotspotsForPanorama(panoramaId: string): HotspotData[] {
+        const panorama = this.getPanoramaById(panoramaId);
+        return panorama?.hotspots || [];
+    }
+
+    // Add hotspot to panorama
+    addHotspotToPanorama(panoramaId: string, hotspot: HotspotData): void {
+        const panorama = this.getPanoramaById(panoramaId);
+        if (panorama) {
+            if (!panorama.hotspots) {
+                panorama.hotspots = [];
+            }
+            panorama.hotspots.push(hotspot);
+            console.log('Hotspot added to panorama:', panoramaId, hotspot.id);
+        }
+    }
+
+    // Update hotspot in panorama
+    updateHotspotInPanorama(panoramaId: string, hotspotId: string, updates: Partial<HotspotData>): void {
+        const panorama = this.getPanoramaById(panoramaId);
+        if (panorama && panorama.hotspots) {
+            const hotspotIndex = panorama.hotspots.findIndex(h => h.id === hotspotId);
+            if (hotspotIndex !== -1) {
+                panorama.hotspots[hotspotIndex] = { ...panorama.hotspots[hotspotIndex], ...updates };
+                console.log('Hotspot updated in panorama:', panoramaId, hotspotId);
+            }
+        }
+    }
+
+    // Delete hotspot from panorama
+    deleteHotspotFromPanorama(panoramaId: string, hotspotId: string): void {
+        const panorama = this.getPanoramaById(panoramaId);
+        if (panorama && panorama.hotspots) {
+            panorama.hotspots = panorama.hotspots.filter(h => h.id !== hotspotId);
+            console.log('Hotspot deleted from panorama:', panoramaId, hotspotId);
+        }
+    }
+
+    // Clear all hotspots from panorama
+    clearHotspotsFromPanorama(panoramaId: string): void {
+        const panorama = this.getPanoramaById(panoramaId);
                     if (panorama) {
-                        set({ currentPanoramaId: id });
-                        console.log('Current panorama set to:', id);
-                    } else {
-                        console.warn('Panorama not found:', id);
-                    }
-                },
+            panorama.hotspots = [];
+            console.log('All hotspots cleared from panorama:', panoramaId);
+        }
+    }
 
-                updatePanorama: (id: string, updates: Partial<PanoramaData>) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p =>
-                            p.id === id ? { ...p, ...updates } : p
-                        )
-                    }));
-                    console.log('Panorama updated:', id, updates);
-                },
+    // Save data to panorama-data.json
+    async saveToFile(): Promise<void> {
+        try {
+            // Convert data to JSON string with proper formatting
+            const jsonData = JSON.stringify(this.panoramas, null, 2);
+            
+            // Save to localStorage for real-time access
+            localStorage.setItem('panorama-data-backup', jsonData);
+            
+            // Create a blob with the JSON data
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'panorama-data.json';
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up
+            URL.revokeObjectURL(url);
+            
+            console.log('Data saved to panorama-data.json and localStorage');
+            alert('Data berhasil disimpan! File akan otomatis diupdate di viewer.');
+        } catch (error) {
+            console.error('Error saving data:', error);
+            throw error;
+        }
+    }
 
-                addPanorama: (panorama: PanoramaData) => {
-                    set((state) => ({
-                        panoramas: [...state.panoramas, panorama]
-                    }));
-                    console.log('Panorama added:', panorama.id);
-                },
-
-                deletePanorama: (id: string) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.filter(p => p.id !== id)
-                    }));
-                    console.log('Panorama deleted:', id);
-                },
-
-                // Marker management
-                addMarker: (panoramaId: string, marker: PanoramaMarker) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    markers: [...(p.markers || []), marker]
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Marker added to panorama:', panoramaId, marker.id);
-                },
-
-                updateMarker: (panoramaId: string, markerId: string, updates: Partial<PanoramaMarker>) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    markers: p.markers?.map(m =>
-                                        m.id === markerId ? { ...m, ...updates } : m
-                                    ) || []
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Marker updated:', panoramaId, markerId, updates);
-                },
-
-                deleteMarker: (panoramaId: string, markerId: string) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    markers: p.markers?.filter(m => m.id !== markerId) || []
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Marker deleted:', panoramaId, markerId);
-                },
-
-                // Link management
-                addLink: (panoramaId: string, link: PanoramaLink) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    links: [...(p.links || []), link]
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Link added to panorama:', panoramaId, link.nodeId);
-                },
-
-                updateLink: (panoramaId: string, targetNodeId: string, updates: Partial<PanoramaLink>) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    links: p.links?.map(l =>
-                                        l.nodeId === targetNodeId ? { ...l, ...updates } : l
-                                    ) || []
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Link updated:', panoramaId, targetNodeId, updates);
-                },
-
-                deleteLink: (panoramaId: string, targetNodeId: string) => {
-                    set((state) => ({
-                        panoramas: state.panoramas.map(p => {
-                            if (p.id === panoramaId) {
-                                return {
-                                    ...p,
-                                    links: p.links?.filter(l => l.nodeId !== targetNodeId) || []
-                                };
-                            }
-                            return p;
-                        })
-                    }));
-                    console.log('Link deleted:', panoramaId, targetNodeId);
-                },
-
-                // Image cache management
-                cacheImage: (url: string, data: string) => {
-                    const state = get();
-                    const now = Date.now();
-                    const size = new Blob([data]).size;
-
-                    // Check if adding this image would exceed cache size
-                    let currentSize = 0;
-                    state.imageCache.forEach(cached => {
-                        currentSize += cached.size;
-                    });
-
-                    if (currentSize + size > state.maxCacheSize) {
-                        // Remove oldest entries until we have space
-                        const sortedEntries = Array.from(state.imageCache.entries())
-                            .sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-                        for (const [key, cached] of sortedEntries) {
-                            if (currentSize + size <= state.maxCacheSize) break;
-                            state.imageCache.delete(key);
-                            currentSize -= cached.size;
-                        }
-                    }
-
-                    const cachedImage: CachedImage = {
-                        url,
-                        data,
-                        timestamp: now,
-                        size
-                    };
-
-                    set((state) => ({
-                        imageCache: new Map(state.imageCache).set(url, cachedImage)
-                    }));
-
-                    console.log('Image cached:', url, 'Size:', size);
-                },
-
-                getCachedImage: (url: string) => {
-                    const state = get();
-                    const cached = state.imageCache.get(url);
-
-                    if (!cached) return null;
-
-                    // Check if cache is expired
-                    const now = Date.now();
-                    if (now - cached.timestamp > state.cacheExpiry) {
-                        state.imageCache.delete(url);
-                        console.log('Cached image expired:', url);
-                        return null;
-                    }
-
-                    return cached;
-                },
-
-                clearExpiredCache: () => {
-                    const state = get();
-                    const now = Date.now();
-                    let clearedCount = 0;
-
-                    state.imageCache.forEach((cached, url) => {
-                        if (now - cached.timestamp > state.cacheExpiry) {
-                            state.imageCache.delete(url);
-                            clearedCount++;
-                        }
-                    });
-
-                    if (clearedCount > 0) {
-                        console.log(`Cleared ${clearedCount} expired cache entries`);
-                    }
-                },
-
-                clearAllCache: () => {
-                    set({ imageCache: new Map() });
-                    console.log('All image cache cleared');
-                },
-
-                // Data persistence
-                saveToStorage: () => {
-                    const state = get();
-                    try {
-                        localStorage.setItem('panorama-data', JSON.stringify(state.panoramas));
-                        console.log('Data saved to localStorage');
+    // Auto-save to localStorage
+    autoSaveToLocalStorage(): void {
+        try {
+            const jsonData = JSON.stringify(this.panoramas, null, 2);
+            localStorage.setItem('panorama-data-backup', jsonData);
+            console.log('Data auto-saved to localStorage');
                     } catch (error) {
-                        console.error('Error saving to localStorage:', error);
-                    }
-                },
+            console.error('Error auto-saving data:', error);
+        }
+    }
 
-                loadFromStorage: () => {
-                    try {
-                        const stored = localStorage.getItem('panorama-data');
-                        if (stored) {
-                            const panoramas = JSON.parse(stored);
-                            set({ panoramas });
+    // Load from localStorage if available
+    loadFromLocalStorage(): void {
+        try {
+            const savedData = localStorage.getItem('panorama-data-backup');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData) as PanoramaData[];
+                this.panoramas = parsedData;
                             console.log('Data loaded from localStorage');
                         }
                     } catch (error) {
                         console.error('Error loading from localStorage:', error);
                     }
-                },
+    }
 
-                exportData: () => {
-                    const state = get();
-                    return JSON.stringify(state.panoramas, null, 2);
-                },
+    // Check if panoramas are linked
+    arePanoramasLinked(sourceId: string, targetId: string): boolean {
+        const panorama = this.getPanoramaById(sourceId);
+        return panorama?.markers?.some(marker => marker.nodeId === targetId) || false;
+    }
 
-                importData: (jsonData: string) => {
-                    try {
-                        const panoramas = JSON.parse(jsonData);
-                        if (Array.isArray(panoramas)) {
-                            set({ panoramas });
-                            console.log('Data imported successfully');
-                            return true;
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error importing data:', error);
-                        return false;
-                    }
-                }
-            }),
-            {
-                name: 'data-manager',
-                partialize: (state) => ({
-                    panoramas: state.panoramas,
-                    currentPanoramaId: state.currentPanoramaId,
-                    imageCache: convertMapToObject(state.imageCache)
-                }),
-                onRehydrateStorage: () => (state) => {
-                    if (state) {
-                        // Convert image cache back to Map
-                        if (state.imageCache && typeof state.imageCache === 'object') {
-                            state.imageCache = convertObjectToMap(state.imageCache as any);
-                        }
+    // Convert markers to hotspots
+    convertMarkersToHotspots(panoramaId: string): HotspotData[] {
+        const panorama = this.getPanoramaById(panoramaId);
+        if (!panorama?.markers) return [];
 
-                        // Clear expired cache on rehydration
-                        setTimeout(() => {
-                            state.clearExpiredCache();
-                        }, 1000);
-                    }
-                }
+        return panorama.markers.map((marker, index) => {
+            const targetPanorama = this.getPanoramaById(marker.nodeId);
+            
+            // Convert position to yaw/pitch format
+            let position: { yaw: number; pitch: number };
+            if ('textureX' in marker.position && 'textureY' in marker.position) {
+                // Convert texture coordinates to spherical coordinates
+                const textureX = marker.position.textureX;
+                const textureY = marker.position.textureY;
+                position = {
+                    yaw: (textureX / 4096) * 2 * Math.PI - Math.PI,
+                    pitch: (textureY / 2048) * Math.PI - Math.PI / 2
+                };
+            } else {
+                position = marker.position as { yaw: number; pitch: number };
             }
-        )
-    )
-);
 
-// Auto-cleanup expired cache every hour
-setInterval(() => {
-    const state = useDataManager.getState();
-    state.clearExpiredCache();
-}, 60 * 60 * 1000); // 1 hour
+            return {
+                id: `marker-${panoramaId}-${marker.nodeId}-${index}`,
+                panoramaId: panoramaId,
+                position: position,
+                type: 'link' as const,
+                title: `Go to ${targetPanorama?.name || marker.nodeId}`,
+                content: `Navigate to ${targetPanorama?.name || marker.nodeId}`,
+                isVisible: true,
+                targetNodeId: marker.nodeId,
+                style: {
+                    backgroundColor: '#3b82f6',
+                    size: 24,
+                    icon: 'link'
+                }
+            };
+        });
+    }
+
+    // Add link hotspot
+    addLinkHotspot(panoramaId: string, targetNodeId: string, position: { yaw: number; pitch: number }): void {
+        const targetPanorama = this.getPanoramaById(targetNodeId);
+        const hotspot: HotspotData = {
+            id: `link-${panoramaId}-${targetNodeId}-${Date.now()}`,
+            panoramaId: panoramaId,
+            position: position,
+            type: 'link',
+            title: `Go to ${targetPanorama?.name || targetNodeId}`,
+            content: `Navigate to ${targetPanorama?.name || targetNodeId}`,
+            isVisible: true,
+            targetNodeId: targetNodeId,
+            style: {
+                backgroundColor: '#3b82f6',
+                size: 24,
+                icon: 'link'
+            }
+        };
+        this.addHotspotToPanorama(panoramaId, hotspot);
+    }
+}
+
+// Create global instance
+export const dataManager = new SimpleDataManager();
 
 // Export helper functions
 export const getPanoramaById = (id: string): PanoramaData | undefined => {
-    return useDataManager.getState().panoramas.find(p => p.id === id);
+    return dataManager.getPanoramaById(id);
 };
 
 export const getAllPanoramaIds = (): string[] => {
-    return useDataManager.getState().panoramas.map(p => p.id);
+    return dataManager.getAllPanoramas().map(p => p.id);
 };
 
 export const getPanoramaNames = (): { id: string; name: string }[] => {
-    return useDataManager.getState().panoramas.map(p => ({ id: p.id, name: p.name }));
+    return dataManager.getPanoramaNames();
 };
 
-export const getLinksForPanorama = (panoramaId: string): PanoramaLink[] => {
-    const panorama = getPanoramaById(panoramaId);
-    return panorama?.links || [];
+export const getMarkersForPanorama = (panoramaId: string): PanoramaMarker[] => {
+    return dataManager.getMarkersForPanorama(panoramaId);
+};
+
+export const getHotspotsForPanorama = (panoramaId: string): HotspotData[] => {
+    return dataManager.getHotspotsForPanorama(panoramaId);
+};
+
+export const addHotspotToPanorama = (panoramaId: string, hotspot: HotspotData): void => {
+    return dataManager.addHotspotToPanorama(panoramaId, hotspot);
+};
+
+export const updateHotspotInPanorama = (panoramaId: string, hotspotId: string, updates: Partial<HotspotData>): void => {
+    return dataManager.updateHotspotInPanorama(panoramaId, hotspotId, updates);
+};
+
+export const deleteHotspotFromPanorama = (panoramaId: string, hotspotId: string): void => {
+    return dataManager.deleteHotspotFromPanorama(panoramaId, hotspotId);
+};
+
+export const clearHotspotsFromPanorama = (panoramaId: string): void => {
+    return dataManager.clearHotspotsFromPanorama(panoramaId);
+};
+
+export const saveToFile = async (): Promise<void> => {
+    return dataManager.saveToFile();
+};
+
+export const autoSaveToLocalStorage = (): void => {
+    return dataManager.autoSaveToLocalStorage();
+};
+
+export const loadFromLocalStorage = (): void => {
+    return dataManager.loadFromLocalStorage();
 };
 
 export const arePanoramasLinked = (sourceId: string, targetId: string): boolean => {
-    const panorama = getPanoramaById(sourceId);
-    return panorama?.links?.some(link => link.nodeId === targetId) || false;
+    return dataManager.arePanoramasLinked(sourceId, targetId);
 };
 
-// Image loading with cache
-export const loadImageWithCache = async (url: string): Promise<string> => {
-    const state = useDataManager.getState();
+export const convertMarkersToHotspots = (panoramaId: string): HotspotData[] => {
+    return dataManager.convertMarkersToHotspots(panoramaId);
+};
 
-    // Check cache first
-    const cached = state.getCachedImage(url);
-    if (cached) {
-        console.log('Image loaded from cache:', url);
-        return cached.data;
-    }
+export const addLinkHotspot = (panoramaId: string, targetNodeId: string, position: { yaw: number; pitch: number }): void => {
+    return dataManager.addLinkHotspot(panoramaId, targetNodeId, position);
+};
 
-    // Load from network
+// Image loading functions
+export const loadImage = async (url: string): Promise<string> => {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const blob = await response.blob();
-        const reader = new FileReader();
+        const fileReader = new FileReader();
 
         return new Promise((resolve, reject) => {
-            reader.onload = () => {
-                const data = reader.result as string;
-                state.cacheImage(url, data);
-                resolve(data);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
+            fileReader.onload = () => resolve(fileReader.result as string);
+            fileReader.onerror = reject;
+            fileReader.readAsDataURL(blob);
         });
     } catch (error) {
-        console.error('Error loading image:', url, error);
+        console.error('Error loading image:', error);
+        throw error;
+    }
+};
+
+export const loadImageWithProgress = async (
+    url: string, 
+    onProgress?: (progress: number) => void
+): Promise<string> => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        const reader = response.body?.getReader();
+        
+        if (!reader) {
+            throw new Error('No reader available');
+        }
+
+        const chunks: Uint8Array[] = [];
+        let receivedLength = 0;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) break;
+            
+            chunks.push(value);
+            receivedLength += value.length;
+            
+            if (onProgress && total > 0) {
+                const progress = (receivedLength / total) * 100;
+                onProgress(progress);
+            }
+        }
+
+        const blob = new Blob(chunks);
+        const fileReader = new FileReader();
+
+        return new Promise((resolve, reject) => {
+            fileReader.onload = () => resolve(fileReader.result as string);
+            fileReader.onerror = reject;
+            fileReader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error('Error loading image with progress:', error);
         throw error;
     }
 };

@@ -1,697 +1,465 @@
 [
     {
-        "id": "type35-1",
-        "panorama": "/panoramas/type_35/vr interior 35 1.png",
-        "thumbnail": "/panoramas/type_35/vr interior 35 1.png",
-        "name": "Type 35 - Interior 1",
-        "caption": "Type 35 - Interior VR 1",
-        "markers": [
-            {
-                "id": "furniture-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Furniture Point",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 780
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type35-2",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 780
-                }
-            },
-            {
-                "nodeId": "type35-3",
-                "position": {
-                    "textureX": 1000,
-                    "textureY": 980
-                }
-            }
-        ]
+      "id": "type35-1",
+      "panorama": "/panoramas/type_35/vr interior 35 1.png",
+      "thumbnail": "/panoramas/type_35/vr interior 35 1.png",
+      "name": "Type 35 - Interior 1",
+      "caption": "Type 35 - Interior VR 1",
+      "markers": [
+        {
+          "nodeId": "type35-2",
+          "position": {
+            "textureX": 1500,
+            "textureY": 780
+          }
+        },
+        {
+          "nodeId": "type35-3",
+          "position": {
+            "textureX": 1000,
+            "textureY": 980
+          }
+        }
+      ]
     },
     {
-        "id": "type35-2",
-        "panorama": "/panoramas/type_35/vr interior 35 2.png",
-        "thumbnail": "/panoramas/type_35/vr interior 35 2.png",
-        "name": "Type 35 - Interior 2",
-        "caption": "Type 35 - Interior VR 2",
-        "markers": [
-            {
-                "id": "window-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-blue.png",
-                "tooltip": "Window View",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type35-3",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "type35-1",
-                "position": {
-                    "textureX": 2800,
-                    "textureY": 900
-                }
-            },
-            {
-                "nodeId": "type35-4",
-                "position": {
-                    "textureX": 800,
-                    "textureY": 1200
-                }
-            }
-        ]
+      "id": "type35-2",
+      "panorama": "/panoramas/type_35/vr interior 35 2.png",
+      "thumbnail": "/panoramas/type_35/vr interior 35 2.png",
+      "name": "Type 35 - Interior 2",
+      "caption": "Type 35 - Interior VR 2",
+      "markers": [
+        {
+          "nodeId": "type35-3",
+          "position": {
+            "textureX": 1200,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "type35-1",
+          "position": {
+            "textureX": 2800,
+            "textureY": 900
+          }
+        },
+        {
+          "nodeId": "type35-4",
+          "position": {
+            "textureX": 800,
+            "textureY": 1200
+          }
+        }
+      ]
     },
     {
-        "id": "type35-3",
-        "panorama": "/panoramas/type_35/vr interior 35 3.png",
-        "thumbnail": "/panoramas/type_35/vr interior 35 3.png",
-        "name": "Type 35 - Interior 3",
-        "caption": "Type 35 - Interior VR 3",
-        "markers": [
-            {
-                "id": "lighting-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Lighting Feature",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type35-4",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            },
-            {
-                "nodeId": "type35-2",
-                "position": {
-                    "textureX": 2400,
-                    "textureY": 700
-                }
-            },
-            {
-                "nodeId": "type35-5",
-                "position": {
-                    "textureX": 400,
-                    "textureY": 1000
-                }
-            }
-        ]
+      "id": "type35-3",
+      "panorama": "/panoramas/type_35/vr interior 35 3.png",
+      "thumbnail": "/panoramas/type_35/vr interior 35 3.png",
+      "name": "Type 35 - Interior 3",
+      "caption": "Type 35 - Interior VR 3",
+      "markers": [
+        {
+          "nodeId": "type35-4",
+          "position": {
+            "textureX": 1600,
+            "textureY": 800
+          }
+        },
+        {
+          "nodeId": "type35-2",
+          "position": {
+            "textureX": 2400,
+            "textureY": 700
+          }
+        },
+        {
+          "nodeId": "type35-5",
+          "position": {
+            "textureX": 400,
+            "textureY": 1000
+          }
+        }
+      ]
     },
     {
-        "id": "type35-4",
-        "panorama": "/panoramas/type_35/vr interior 35 4.png",
-        "thumbnail": "/panoramas/type_35/vr interior 35 4.png",
-        "name": "Type 35 - Interior 4",
-        "caption": "Type 35 - Interior VR 4",
-        "markers": [
-            {
-                "id": "storage-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Storage Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type35-5",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "type35-3",
-                "position": {
-                    "textureX": 2200,
-                    "textureY": 900
-                }
-            }
-        ]
+      "id": "type35-4",
+      "panorama": "/panoramas/type_35/vr interior 35 4.png",
+      "thumbnail": "/panoramas/type_35/vr interior 35 4.png",
+      "name": "Type 35 - Interior 4",
+      "caption": "Type 35 - Interior VR 4",
+      "markers": [
+        {
+          "nodeId": "type35-5",
+          "position": {
+            "textureX": 1800,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "type35-3",
+          "position": {
+            "textureX": 2200,
+            "textureY": 900
+          }
+        }
+      ]
     },
     {
-        "id": "type35-5",
-        "panorama": "/panoramas/type_35/vr interior 35 5.png",
-        "thumbnail": "/panoramas/type_35/vr interior 35 5.png",
-        "name": "Type 35 - Interior 5",
-        "caption": "Type 35 - Interior VR 5",
-        "markers": [
-            {
-                "id": "entrance-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Main Entrance",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 2000,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type35-4",
-                "position": {
-                    "textureX": 2000,
-                    "textureY": 800
-                }
-            }
-        ]
+      "id": "type35-5",
+      "panorama": "/panoramas/type_35/vr interior 35 5.png",
+      "thumbnail": "/panoramas/type_35/vr interior 35 5.png",
+      "name": "Type 35 - Interior 5",
+      "caption": "Type 35 - Interior VR 5",
+      "markers": [
+        {
+          "nodeId": "type35-4",
+          "position": {
+            "textureX": 2000,
+            "textureY": 800
+          }
+        }
+      ]
     },
     {
-        "id": "type45-bedroom1",
-        "panorama": "/panoramas/type_45/BEDROOM 1.png",
-        "thumbnail": "/panoramas/type_45/BEDROOM 1.png",
-        "name": "Type 45 - Bedroom 1",
-        "caption": "Type 45 - Bedroom 1",
-        "markers": [
-            {
-                "id": "bed-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Bed Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1400,
-                    "textureY": 700
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type45-bedroom2",
-                "position": {
-                    "textureX": 1400,
-                    "textureY": 700
-                }
-            },
-            {
-                "nodeId": "type45-livingroom",
-                "position": {
-                    "textureX": 2600,
-                    "textureY": 800
-                }
-            }
-        ]
+      "id": "type45-bedroom1",
+      "panorama": "/panoramas/type_45/BEDROOM 1.png",
+      "thumbnail": "/panoramas/type_45/BEDROOM 1.png",
+      "name": "Type 45 - Bedroom 1",
+      "caption": "Type 45 - Bedroom 1",
+      "markers": [
+        {
+          "nodeId": "type45-bedroom2",
+          "position": {
+            "textureX": 1400,
+            "textureY": 700
+          }
+        },
+        {
+          "nodeId": "type45-livingroom",
+          "position": {
+            "textureX": 2600,
+            "textureY": 800
+          }
+        }
+      ]
     },
     {
-        "id": "type45-bedroom2",
-        "panorama": "/panoramas/type_45/BEDROOM 2.png",
-        "thumbnail": "/panoramas/type_45/BEDROOM 2.png",
-        "name": "Type 45 - Bedroom 2",
-        "caption": "Type 45 - Bedroom 2",
-        "markers": [
-            {
-                "id": "closet-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-blue.png",
-                "tooltip": "Closet Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type45-livingroom",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "type45-bedroom1",
-                "position": {
-                    "textureX": 2800,
-                    "textureY": 900
-                }
-            },
-            {
-                "nodeId": "type45-masterbed",
-                "position": {
-                    "textureX": 800,
-                    "textureY": 1200
-                }
-            }
-        ]
+      "id": "type45-bedroom2",
+      "panorama": "/panoramas/type_45/BEDROOM 2.png",
+      "thumbnail": "/panoramas/type_45/BEDROOM 2.png",
+      "name": "Type 45 - Bedroom 2",
+      "caption": "Type 45 - Bedroom 2",
+      "markers": [
+        {
+          "nodeId": "type45-livingroom",
+          "position": {
+            "textureX": 1200,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "type45-bedroom1",
+          "position": {
+            "textureX": 2800,
+            "textureY": 900
+          }
+        },
+        {
+          "nodeId": "type45-masterbed",
+          "position": {
+            "textureX": 800,
+            "textureY": 1200
+          }
+        }
+      ]
     },
     {
-        "id": "type45-livingroom",
-        "panorama": "/panoramas/type_45/LIVING ROOM.png",
-        "thumbnail": "/panoramas/type_45/LIVING ROOM.png",
-        "name": "Type 45 - Living Room",
-        "caption": "Type 45 - Living Room",
-        "markers": [
-            {
-                "id": "sofa-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Sofa Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type45-masterbed",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            },
-            {
-                "nodeId": "type45-bedroom2",
-                "position": {
-                    "textureX": 2400,
-                    "textureY": 700
-                }
-            }
-        ]
+      "id": "type45-livingroom",
+      "panorama": "/panoramas/type_45/LIVING ROOM.png",
+      "thumbnail": "/panoramas/type_45/LIVING ROOM.png",
+      "name": "Type 45 - Living Room",
+      "caption": "Type 45 - Living Room",
+      "markers": [
+        {
+          "nodeId": "type45-masterbed",
+          "position": {
+            "textureX": 1600,
+            "textureY": 800
+          }
+        },
+        {
+          "nodeId": "type45-bedroom2",
+          "position": {
+            "textureX": 2400,
+            "textureY": 700
+          }
+        }
+      ]
     },
     {
-        "id": "type45-masterbed",
-        "panorama": "/panoramas/type_45/MASTER BED.png",
-        "thumbnail": "/panoramas/type_45/MASTER BED.png",
-        "name": "Type 45 - Master Bed",
-        "caption": "Type 45 - Master Bed",
-        "markers": [
-            {
-                "id": "master-bed-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Master Bed",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type45-livingroom",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ]
+      "id": "type45-masterbed",
+      "panorama": "/panoramas/type_45/MASTER BED.png",
+      "thumbnail": "/panoramas/type_45/MASTER BED.png",
+      "name": "Type 45 - Master Bed",
+      "caption": "Type 45 - Master Bed",
+      "markers": [
+        {
+          "nodeId": "type45-livingroom",
+          "position": {
+            "textureX": 1800,
+            "textureY": 600
+          }
+        }
+      ]
     },
     {
-        "id": "type60-dining",
-        "panorama": "/panoramas/type_60/1st Floor DINING ROOM.png",
-        "thumbnail": "/panoramas/type_60/1st Floor DINING ROOM.png",
-        "name": "Type 60 - Dining Room",
-        "caption": "Type 60 - 1st Floor Dining Room",
-        "markers": [
-            {
-                "id": "dining-table-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Dining Table",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 780
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-livingroom",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 780
-                }
-            }
-        ]
+      "id": "type60-dining",
+      "panorama": "/panoramas/type_60/1st Floor DINING ROOM.png",
+      "thumbnail": "/panoramas/type_60/1st Floor DINING ROOM.png",
+      "name": "Type 60 - Dining Room",
+      "caption": "Type 60 - 1st Floor Dining Room",
+      "markers": [
+        {
+          "nodeId": "type60-livingroom",
+          "position": {
+            "textureX": 1500,
+            "textureY": 780
+          }
+        }
+      ]
     },
     {
-        "id": "type60-livingroom",
-        "panorama": "/panoramas/type_60/1st Floor LIVINGROOM.png",
-        "thumbnail": "/panoramas/type_60/1st Floor LIVINGROOM.png",
-        "name": "Type 60 - Living Room",
-        "caption": "Type 60 - 1st Floor Living Room",
-        "markers": [
-            {
-                "id": "living-area-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-blue.png",
-                "tooltip": "Living Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-bedroom1",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "type60-dining",
-                "position": {
-                    "textureX": 2800,
-                    "textureY": 900
-                }
-            }
-        ]
+      "id": "type60-livingroom",
+      "panorama": "/panoramas/type_60/1st Floor LIVINGROOM.png",
+      "thumbnail": "/panoramas/type_60/1st Floor LIVINGROOM.png",
+      "name": "Type 60 - Living Room",
+      "caption": "Type 60 - 1st Floor Living Room",
+      "markers": [
+        {
+          "nodeId": "type60-bedroom1",
+          "position": {
+            "textureX": 1200,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "type60-dining",
+          "position": {
+            "textureX": 2800,
+            "textureY": 900
+          }
+        }
+      ]
     },
     {
-        "id": "type60-bedroom1",
-        "panorama": "/panoramas/type_60/2nd Floor Bedroom 1.png",
-        "thumbnail": "/panoramas/type_60/2nd Floor Bedroom 1.png",
-        "name": "Type 60 - Bedroom 1",
-        "caption": "Type 60 - 2nd Floor Bedroom 1",
-        "markers": [
-            {
-                "id": "bedroom1-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Bedroom 1",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-bedroom2",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            },
-            {
-                "nodeId": "type60-livingroom",
-                "position": {
-                    "textureX": 2400,
-                    "textureY": 700
-                }
-            }
-        ]
+      "id": "type60-bedroom1",
+      "panorama": "/panoramas/type_60/2nd Floor Bedroom 1.png",
+      "thumbnail": "/panoramas/type_60/2nd Floor Bedroom 1.png",
+      "name": "Type 60 - Bedroom 1",
+      "caption": "Type 60 - 2nd Floor Bedroom 1",
+      "markers": [
+        {
+          "nodeId": "type60-bedroom2",
+          "position": {
+            "textureX": 1600,
+            "textureY": 800
+          }
+        },
+        {
+          "nodeId": "type60-livingroom",
+          "position": {
+            "textureX": 2400,
+            "textureY": 700
+          }
+        }
+      ]
     },
     {
-        "id": "type60-bedroom2",
-        "panorama": "/panoramas/type_60/2nd Floor Bedroom 2.png",
-        "thumbnail": "/panoramas/type_60/2nd Floor Bedroom 2.png",
-        "name": "Type 60 - Bedroom 2",
-        "caption": "Type 60 - 2nd Floor Bedroom 2",
-        "markers": [
-            {
-                "id": "bedroom2-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Bedroom 2",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-masterbed",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "type60-bedroom1",
-                "position": {
-                    "textureX": 2200,
-                    "textureY": 900
-                }
-            }
-        ]
+      "id": "type60-bedroom2",
+      "panorama": "/panoramas/type_60/2nd Floor Bedroom 2.png",
+      "thumbnail": "/panoramas/type_60/2nd Floor Bedroom 2.png",
+      "name": "Type 60 - Bedroom 2",
+      "caption": "Type 60 - 2nd Floor Bedroom 2",
+      "markers": [
+        {
+          "nodeId": "type60-masterbed",
+          "position": {
+            "textureX": 1800,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "type60-bedroom1",
+          "position": {
+            "textureX": 2200,
+            "textureY": 900
+          }
+        }
+      ]
     },
     {
-        "id": "type60-masterbed",
-        "panorama": "/panoramas/type_60/2nd Floor Masterbed.png",
-        "thumbnail": "/panoramas/type_60/2nd Floor Masterbed.png",
-        "name": "Type 60 - Master Bed",
-        "caption": "Type 60 - 2nd Floor Master Bed",
-        "markers": [
-            {
-                "id": "master-bedroom-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Master Bedroom",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 2000,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-wic",
-                "position": {
-                    "textureX": 2000,
-                    "textureY": 800
-                }
-            },
-            {
-                "nodeId": "type60-bedroom2",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 1000
-                }
-            }
-        ]
+      "id": "type60-masterbed",
+      "panorama": "/panoramas/type_60/2nd Floor Masterbed.png",
+      "thumbnail": "/panoramas/type_60/2nd Floor Masterbed.png",
+      "name": "Type 60 - Master Bed",
+      "caption": "Type 60 - 2nd Floor Master Bed",
+      "markers": [
+        {
+          "nodeId": "type60-wic",
+          "position": {
+            "textureX": 2000,
+            "textureY": 800
+          }
+        },
+        {
+          "nodeId": "type60-bedroom2",
+          "position": {
+            "textureX": 1200,
+            "textureY": 1000
+          }
+        }
+      ]
     },
     {
-        "id": "type60-wic",
-        "panorama": "/panoramas/type_60/WIC.png",
-        "thumbnail": "/panoramas/type_60/WIC.png",
-        "name": "Type 60 - WIC",
-        "caption": "Type 60 - Walk In Closet",
-        "markers": [
-            {
-                "id": "closet-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Walk In Closet",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "type60-masterbed",
-                "position": {
-                    "textureX": 1800,
-                    "textureY": 600
-                }
-            }
-        ]
+      "id": "type60-wic",
+      "panorama": "/panoramas/type_60/WIC.png",
+      "thumbnail": "/panoramas/type_60/WIC.png",
+      "name": "Type 60 - WIC",
+      "caption": "Type 60 - Walk In Closet",
+      "markers": [
+        {
+          "nodeId": "type60-masterbed",
+          "position": {
+            "textureX": 1800,
+            "textureY": 600
+          }
+        }
+      ]
     },
     {
-        "id": "kawasan-1",
-        "panorama": "/panoramas/kawasan/Panorama 1.png",
-        "thumbnail": "/panoramas/kawasan/Panorama 1.png",
-        "name": "Kawasan - Panorama 1",
-        "caption": "Kawasan - Panorama 1",
-        "markers": [
-            {
-                "id": "lighthouse-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Cape Florida Light, Key Biscayne",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 2500,
-                    "textureY": 1200
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "kawasan-2",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 780
-                }
-            },
-            {
-                "nodeId": "kawasan-3",
-                "position": {
-                    "textureX": 3000,
-                    "textureY": 780
-                }
-            }
-        ]
+      "id": "kawasan-1",
+      "panorama": "/panoramas/kawasan/Panorama 1.png",
+      "thumbnail": "/panoramas/kawasan/Panorama 1.png",
+      "name": "Kawasan - Panorama 1",
+      "caption": "Kawasan - Panorama 1",
+      "markers": [
+        {
+          "nodeId": "kawasan-2",
+          "position": {
+            "textureX": 1500,
+            "textureY": 780
+          }
+        },
+        {
+          "nodeId": "kawasan-3",
+          "position": {
+            "textureX": 3000,
+            "textureY": 780
+          }
+        }
+      ],
+      "hotspots": [
+        {
+          "id": "marker-kawasan-1-kawasan-2-0",
+          "panoramaId": "kawasan-1",
+          "position": {
+            "yaw": -0.8406214717613314,
+            "pitch": -0.3742913122440965
+          },
+          "type": "link",
+          "title": "Go to Kawasan - Panorama 2",
+          "content": "Navigate to Kawasan - Panorama 2",
+          "isVisible": true,
+          "style": {
+            "backgroundColor": "#3b82f6",
+            "size": 24,
+            "icon": "link"
+          },
+          "targetNodeId": "kawasan-2"
+        },
+        {
+          "id": "marker-kawasan-1-kawasan-3-1",
+          "panoramaId": "kawasan-1",
+          "position": {
+            "yaw": 1.4603497100671303,
+            "pitch": -0.3742913122440965
+          },
+          "type": "link",
+          "title": "Go to Kawasan - Panorama 3",
+          "content": "Navigate to Kawasan - Panorama 3",
+          "isVisible": true,
+          "style": {
+            "backgroundColor": "#3b82f6",
+            "size": 24,
+            "icon": "link"
+          },
+          "targetNodeId": "kawasan-3"
+        },
+        {
+          "id": "link-kawasan-1-kawasan-2-1754364390051",
+          "panoramaId": "kawasan-1",
+          "position": {
+            "yaw": 0,
+            "pitch": 0
+          },
+          "type": "link",
+          "title": "Go to kawasan-2",
+          "content": "Navigate to kawasan-2",
+          "isVisible": true,
+          "style": {
+            "backgroundColor": "#3b82f6",
+            "size": 24,
+            "icon": "link"
+          },
+          "targetNodeId": "kawasan-2"
+        }
+      ]
     },
     {
-        "id": "kawasan-2",
-        "panorama": "/panoramas/kawasan/Panorama 2.png",
-        "thumbnail": "/panoramas/kawasan/Panorama 2.png",
-        "name": "Kawasan - Panorama 2",
-        "caption": "Kawasan - Panorama 2",
-        "markers": [
-            {
-                "id": "building-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-blue.png",
-                "tooltip": "Building Point",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 1500,
-                    "textureY": 800
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "kawasan-3",
-                "position": {
-                    "textureX": 1200,
-                    "textureY": 600
-                }
-            },
-            {
-                "nodeId": "kawasan-1",
-                "position": {
-                    "textureX": 2800,
-                    "textureY": 900
-                }
-            },
-            {
-                "nodeId": "type35-1",
-                "position": {
-                    "textureX": 800,
-                    "textureY": 1200
-                }
-            }
-        ]
+      "id": "kawasan-2",
+      "panorama": "/panoramas/kawasan/Panorama 2.png",
+      "thumbnail": "/panoramas/kawasan/Panorama 2.png",
+      "name": "Kawasan - Panorama 2",
+      "caption": "Kawasan - Panorama 2",
+      "markers": [
+        {
+          "nodeId": "kawasan-3",
+          "position": {
+            "textureX": 1200,
+            "textureY": 600
+          }
+        },
+        {
+          "nodeId": "kawasan-1",
+          "position": {
+            "textureX": 2800,
+            "textureY": 900
+          }
+        },
+        {
+          "nodeId": "type35-1",
+          "position": {
+            "textureX": 800,
+            "textureY": 1200
+          }
+        }
+      ]
     },
     {
-        "id": "kawasan-3",
-        "panorama": "/panoramas/kawasan/Panorama 3.png",
-        "thumbnail": "/panoramas/kawasan/Panorama 3.png",
-        "name": "Kawasan - Panorama 3",
-        "caption": "Kawasan - Panorama 3",
-        "markers": [
-            {
-                "id": "park-marker",
-                "image": "https://photo-sphere-viewer-data.netlify.app/assets/pictos/pin-red.png",
-                "tooltip": "Park Area",
-                "size": {
-                    "width": 120,
-                    "height": 120
-                },
-                "anchor": "bottom center",
-                "position": {
-                    "textureX": 2000,
-                    "textureY": 1000
-                }
-            }
-        ],
-        "links": [
-            {
-                "nodeId": "kawasan-2",
-                "position": {
-                    "textureX": 1600,
-                    "textureY": 800
-                }
-            }
-        ]
+      "id": "kawasan-3",
+      "panorama": "/panoramas/kawasan/Panorama 3.png",
+      "thumbnail": "/panoramas/kawasan/Panorama 3.png",
+      "name": "Kawasan - Panorama 3",
+      "caption": "Kawasan - Panorama 3",
+      "markers": [
+        {
+          "nodeId": "kawasan-2",
+          "position": {
+            "textureX": 1600,
+            "textureY": 800
+          }
+        }
+      ]
     }
-]
+  ]

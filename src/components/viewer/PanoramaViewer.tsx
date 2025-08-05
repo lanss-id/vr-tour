@@ -4,25 +4,29 @@ import { VirtualTourPlugin } from '@photo-sphere-viewer/virtual-tour-plugin';
 import { GalleryPlugin } from '@photo-sphere-viewer/gallery-plugin';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
 import { useViewerStore } from '../../store/viewerStore';
-import { useDataManager, getPanoramaById, getLinksForPanorama, loadImageWithCache } from '../../utils/dataManager';
+import { useViewerSupabase } from '../../hooks/useViewerSupabase';
+import { getPanoramaById } from '../../utils/dataManager';
+import { getHotspotsForPanorama } from '../../services/migrationService';
+import Loading from '../common/Loading';
+import HotspotDisplay from './HotspotDisplay';
 
 // Helper function to validate node ID
-const validateNodeId = (nodeId: string): string => {
-    const validNode = getPanoramaById(nodeId);
+const validateNodeId = (nodeId: string, panoramas: any[]): string => {
+    const validNode = panoramas.find(p => p.id === nodeId);
     if (validNode) {
         return nodeId;
     }
-    // Return 'kawasan-1' as default if invalid
-    return 'kawasan-1';
+    // Return first panorama as default if invalid
+    return panoramas.length > 0 ? panoramas[0].id : '';
 };
 
 // Helper: cari node by id
-const getNodeById = (id: string) => {
-    return getPanoramaById(id);
+const getNodeById = (id: string, panoramas: any[]) => {
+    return panoramas.find(p => p.id === id);
 };
 
-// Helper: hapus semua marker navigasi, lalu tambahkan marker navigasi baru sesuai markers node aktif
-const updateNavigationMarkers = (viewer: any, nodeId: string) => {
+// Helper: hapus semua marker navigasi, lalu tambahkan marker navigasi baru sesuai hotspots dari database
+const updateNavigationMarkers = async (viewer: any, nodeId: string, panoramas: any[]) => {
     console.log('Updating navigation markers for node:', nodeId);
 
     const markersPlugin = viewer.getPlugin(MarkersPlugin) as any;
@@ -38,42 +42,32 @@ const updateNavigationMarkers = (viewer: any, nodeId: string) => {
         console.warn('Error clearing markers:', error);
     }
 
-    const node = getNodeById(nodeId);
-    if (!node || !node.links) {
-        console.log('No node or links found for:', nodeId);
+    // Get hotspots from database for this panorama
+    const hotspots = await getHotspotsForPanorama(nodeId);
+    console.log('Hotspots from database for node:', nodeId, 'count:', hotspots.length);
+
+    if (hotspots.length === 0) {
+        console.log('No hotspots found for node:', nodeId);
         return;
     }
 
-    console.log('Adding navigation markers for links:', node.links.length);
+    console.log('Adding navigation markers for hotspots:', hotspots.length);
 
-    node.links.forEach((link: any, idx: number) => {
-        console.log('Adding marker for navigation:', link.nodeId, 'at position:', link.position);
-
-        // Konversi posisi jika menggunakan textureX/textureY
-        let position;
-        if (link.position && 'textureX' in link.position && 'textureY' in link.position) {
-            const textureX = link.position.textureX;
-            const textureY = link.position.textureY;
-            position = {
-                yaw: (textureX / 4096) * 2 * Math.PI - Math.PI,
-                pitch: (textureY / 2048) * Math.PI - Math.PI / 2
-            };
-        } else {
-            position = link.position || { yaw: 0, pitch: 0 };
-        }
+    hotspots.forEach((hotspot: any, idx: number) => {
+        console.log('Adding marker for navigation:', hotspot.target_node_id, 'at position:', { yaw: hotspot.position_yaw, pitch: hotspot.position_pitch });
 
         try {
             markersPlugin.addMarker({
-                id: `nav-marker-${link.nodeId}`,
+                id: `nav-marker-${hotspot.target_node_id}`,
                 image: '/icon/door-open.svg',
                 tooltip: {
-                    content: `Pindah ke panorama ${link.nodeId}`,
+                    content: hotspot.title || `Pindah ke panorama ${hotspot.target_node_id}`,
                     position: 'top'
                 },
                 size: { width: 48, height: 48 },
                 anchor: 'bottom center',
-                position: position,
-                data: { targetNodeId: link.nodeId }
+                position: { yaw: hotspot.position_yaw, pitch: hotspot.position_pitch },
+                data: { targetNodeId: hotspot.target_node_id }
             });
         } catch (error) {
             console.warn('Error adding marker:', error);
@@ -82,18 +76,18 @@ const updateNavigationMarkers = (viewer: any, nodeId: string) => {
 };
 
 // Helper: force update markers dengan retry mechanism
-const forceUpdateMarkers = (viewer: any, nodeId: string, retryCount = 0) => {
+const forceUpdateMarkers = async (viewer: any, nodeId: string, panoramas: any[], retryCount = 0) => {
     if (retryCount >= 3) {
         console.warn('Max retry count reached for marker update');
         return;
     }
 
     try {
-        updateNavigationMarkers(viewer, nodeId);
+        await updateNavigationMarkers(viewer, nodeId, panoramas);
     } catch (error) {
         console.warn(`Error updating markers (attempt ${retryCount + 1}):`, error);
         setTimeout(() => {
-            forceUpdateMarkers(viewer, nodeId, retryCount + 1);
+            forceUpdateMarkers(viewer, nodeId, panoramas, retryCount + 1);
         }, 500 * (retryCount + 1));
     }
 };
@@ -102,18 +96,28 @@ const PanoramaViewer: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
     const { currentNodeId, setCurrentNode } = useViewerStore();
-    const { panoramas } = useDataManager();
+    const { panoramas, loading, error, getPanoramaById } = useViewerSupabase();
     const isInitializedRef = useRef(false);
 
+    // Set default panorama when data is loaded
     useEffect(() => {
-        if (!containerRef.current || isInitializedRef.current) {
+        if (panoramas.length > 0 && !currentNodeId) {
+            console.log('Setting default panorama to:', panoramas[0].id);
+            setCurrentNode(panoramas[0].id);
+        }
+    }, [panoramas, currentNodeId, setCurrentNode]);
+
+    // Initialize viewer effect - selalu dipanggil
+    useEffect(() => {
+        if (!containerRef.current || isInitializedRef.current || panoramas.length === 0) {
             return;
         }
 
         isInitializedRef.current = true;
         console.log('Initializing PanoramaViewer with currentNodeId:', currentNodeId);
+        console.log('Available panoramas:', panoramas.length);
 
-        // Convert panorama data to PSV format - PSV requires yaw/pitch internally
+        // Convert panorama data to PSV format
         const nodes = panoramas.map((node: any) => ({
             id: node.id,
             panorama: node.panorama,
@@ -122,12 +126,12 @@ const PanoramaViewer: React.FC = () => {
             caption: node.caption,
         }));
 
-        // Use current node if it exists, otherwise use 'kawasan-1' as default
+        // Use current node if it exists, otherwise use first panorama as default
         let validNodeId = currentNodeId;
         const currentNode = nodes.find(node => node.id === currentNodeId);
-        if (!currentNode) {
-            validNodeId = 'kawasan-1';
-            console.log('Current node not found, using default node:', validNodeId);
+        if (!currentNode || !currentNodeId) {
+            validNodeId = panoramas[0].id;
+            console.log('Current node not found or empty, using first panorama as default:', validNodeId);
             setCurrentNode(validNodeId);
         } else {
             console.log('Using existing current node:', validNodeId);
@@ -158,8 +162,8 @@ const PanoramaViewer: React.FC = () => {
         viewerRef.current.addEventListener('ready', () => {
             console.log('Viewer ready, initializing navigation markers');
             // Delay sedikit untuk memastikan plugin sudah siap
-            setTimeout(() => {
-                forceUpdateMarkers(viewerRef.current, validNodeId);
+            setTimeout(async () => {
+                await forceUpdateMarkers(viewerRef.current, validNodeId, panoramas);
             }, 1000);
         });
 
@@ -187,9 +191,9 @@ const PanoramaViewer: React.FC = () => {
                             virtualTour.setCurrentNode(targetNodeId);
 
                             // Update marker navigasi setelah delay yang lebih lama
-                            setTimeout(() => {
+                            setTimeout(async () => {
                                 console.log('Updating markers after navigation to:', targetNodeId);
-                                forceUpdateMarkers(viewerRef.current, targetNodeId);
+                                await forceUpdateMarkers(viewerRef.current, targetNodeId, panoramas);
                             }, 1000);
                         } catch (error) {
                             console.error('Error navigating to node:', error);
@@ -200,19 +204,19 @@ const PanoramaViewer: React.FC = () => {
 
             // Jika user pindah panorama lewat cara lain (misal: menu), update marker navigasi juga
             if (virtualTour) {
-                virtualTour.addEventListener('node-changed', (e: any, node: any) => {
+                virtualTour.addEventListener('node-changed', async (e: any, node: any) => {
                     console.log('Node changed event triggered');
                     console.log('Node changed to:', node.id);
 
                     // Validate the nodeId before setting it
-                    const validNodeId = validateNodeId(node.id);
+                    const validNodeId = validateNodeId(node.id, panoramas);
                     console.log('Validated nodeId:', validNodeId);
                     setCurrentNode(validNodeId);
 
                     // Update marker navigasi dengan delay yang lebih lama
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         console.log('Updating markers after node-changed to:', validNodeId);
-                        forceUpdateMarkers(viewerRef.current, validNodeId);
+                        await forceUpdateMarkers(viewerRef.current, validNodeId, panoramas);
                     }, 1000);
                 });
             }
@@ -224,7 +228,7 @@ const PanoramaViewer: React.FC = () => {
 
             if (virtualTour) {
                 // Listen untuk event panorama loaded
-                virtualTour.addEventListener('panorama-loaded', (e: any) => {
+                virtualTour.addEventListener('panorama-loaded', async (e: any) => {
                     console.log('Panorama loaded event triggered');
                     const currentVirtualNode = virtualTour.getCurrentNode();
                     if (currentVirtualNode) {
@@ -237,14 +241,14 @@ const PanoramaViewer: React.FC = () => {
                         }
                     }
 
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         console.log('Updating markers after panorama loaded');
-                        forceUpdateMarkers(viewerRef.current, validNodeId);
+                        await forceUpdateMarkers(viewerRef.current, validNodeId, panoramas);
                     }, 500);
                 });
 
                 // Tambahan: Event listener untuk panorama-changed (lebih reliable)
-                virtualTour.addEventListener('panorama-changed', (e: any) => {
+                virtualTour.addEventListener('panorama-changed', async (e: any) => {
                     console.log('Panorama changed event triggered');
                     const currentVirtualNode = virtualTour.getCurrentNode();
                     if (currentVirtualNode) {
@@ -254,9 +258,9 @@ const PanoramaViewer: React.FC = () => {
                         // Update store state
                         setCurrentNode(nodeId);
 
-                        setTimeout(() => {
+                        setTimeout(async () => {
                             console.log('Updating markers after panorama-changed to:', nodeId);
-                            forceUpdateMarkers(viewerRef.current, nodeId);
+                            await forceUpdateMarkers(viewerRef.current, nodeId, panoramas);
                         }, 300);
                     }
                 });
@@ -287,18 +291,18 @@ const PanoramaViewer: React.FC = () => {
             }
             isInitializedRef.current = false;
         };
-    }, []); // Empty dependency array for initial setup
+    }, [panoramas, currentNodeId, setCurrentNode]); // Add panoramas as dependency
 
     // Handle panorama navigation from external components
     useEffect(() => {
-        if (!viewerRef.current || !isInitializedRef.current) {
+        if (!viewerRef.current || !isInitializedRef.current || panoramas.length === 0) {
             return;
         }
 
         const virtualTour = viewerRef.current.getPlugin(VirtualTourPlugin);
         if (virtualTour) {
             // Check if the node exists in the data
-            const nodeExists = panoramas.some(node => node.id === currentNodeId);
+            const nodeExists = panoramas.some((node: any) => node.id === currentNodeId);
             if (nodeExists) {
                 console.log('=== EXTERNAL NAVIGATION ===');
                 console.log('Navigating to node:', currentNodeId);
@@ -314,9 +318,9 @@ const PanoramaViewer: React.FC = () => {
                         (virtualTour as any).setCurrentNode(currentNodeId);
 
                         // Update markers immediately after navigation
-                        setTimeout(() => {
+                        setTimeout(async () => {
                             console.log('Updating markers after external navigation to:', currentNodeId);
-                            forceUpdateMarkers(viewerRef.current, currentNodeId);
+                            await forceUpdateMarkers(viewerRef.current, currentNodeId, panoramas);
                         }, 500);
                     } catch (err) {
                         console.warn('Error navigating to node:', err);
@@ -324,35 +328,35 @@ const PanoramaViewer: React.FC = () => {
                 } else {
                     console.log('Already on target node, skipping navigation');
                     // Even if we're already on the target node, ensure markers are updated
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         console.log('Updating markers for current node:', currentNodeId);
-                        forceUpdateMarkers(viewerRef.current, currentNodeId);
+                        await forceUpdateMarkers(viewerRef.current, currentNodeId, panoramas);
                     }, 100);
                 }
             } else {
                 console.warn('Node does not exist in panorama data:', currentNodeId);
             }
         }
-    }, [currentNodeId, panoramas]); // Listen to currentNodeId changes
+    }, [currentNodeId, panoramas]); // Add panoramas as dependency
 
     // Additional effect to ensure markers are always updated when currentNodeId changes
     useEffect(() => {
-        if (!viewerRef.current || !isInitializedRef.current) {
+        if (!viewerRef.current || !isInitializedRef.current || panoramas.length === 0) {
             return;
         }
 
         // Force update markers whenever currentNodeId changes
-        const timeoutId = setTimeout(() => {
+        const timeoutId = setTimeout(async () => {
             console.log('Force updating markers for currentNodeId change:', currentNodeId);
-            forceUpdateMarkers(viewerRef.current, currentNodeId);
+            await forceUpdateMarkers(viewerRef.current, currentNodeId, panoramas);
         }, 200);
 
         return () => clearTimeout(timeoutId);
-    }, [currentNodeId]);
+    }, [currentNodeId, panoramas]); // Add panoramas as dependency
 
     // Effect to ensure state synchronization between viewer and store
     useEffect(() => {
-        if (!viewerRef.current || !isInitializedRef.current) {
+        if (!viewerRef.current || !isInitializedRef.current || panoramas.length === 0) {
             return;
         }
 
@@ -367,14 +371,59 @@ const PanoramaViewer: React.FC = () => {
                 setCurrentNode(currentVirtualNode.id);
             }
         }
-    }, [currentNodeId, setCurrentNode]);
+    }, [currentNodeId, setCurrentNode, panoramas]); // Add panoramas as dependency
 
+    // Render loading state
+    if (loading) {
+        return (
+            <div className="w-full h-full flex items-center justify-center">
+                <Loading message="Memuat panorama dari Supabase..." />
+            </div>
+        );
+    }
+
+    // Render error state
+    if (error) {
+        return (
+            <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-red-600 text-lg font-semibold mb-2">Error</div>
+                    <div className="text-gray-600">{error}</div>
+                    <div className="text-sm text-gray-500 mt-2">
+                        Mencoba memuat data dari file lokal...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Render empty state
+    if (panoramas.length === 0) {
+        return (
+            <div className="w-full h-full flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-gray-600 text-lg font-semibold mb-2">Tidak ada panorama</div>
+                    <div className="text-sm text-gray-500">
+                        Belum ada data panorama di Supabase. Silakan tambah panorama melalui editor.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Render viewer
     return (
-        <div
-            ref={containerRef}
-            className="w-full h-full relative"
-            style={{ width: '100%', height: '100%', position: 'relative' }}
-        />
+        <div className="w-full h-full relative">
+            <div
+                ref={containerRef}
+                className="w-full h-full relative"
+                style={{ width: '100%', height: '100%', position: 'relative' }}
+            />
+            {/* Hotspot Display Component */}
+            {viewerRef.current && currentNodeId && (
+                <HotspotDisplay viewer={viewerRef.current} />
+            )}
+        </div>
     );
 };
 

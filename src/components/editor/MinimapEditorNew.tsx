@@ -6,7 +6,7 @@ import { useMinimap } from '../../hooks/useMinimap';
 import { MinimapMarker, MinimapPanorama } from '../../types/panorama';
 import Button from '../common/Button';
 
-const MinimapEditor: React.FC = () => {
+const MinimapEditorNew: React.FC = () => {
     const { 
         minimapData, 
         updateMinimapData, 
@@ -454,4 +454,4 @@ const MinimapEditor: React.FC = () => {
     );
 };
 
-export default MinimapEditor;
+export default MinimapEditorNew; 

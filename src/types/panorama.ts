@@ -49,6 +49,7 @@ export interface Category {
 export interface MinimapData {
     backgroundImage: string;
     markers: MinimapMarker[];
+    panoramas: MinimapPanorama[];
 }
 
 export interface MinimapMarker {
@@ -57,4 +58,12 @@ export interface MinimapMarker {
     x: number;
     y: number;
     label: string;
+}
+
+export interface MinimapPanorama {
+    id: string;
+    x: number;
+    y: number;
+    name?: string;
+    thumbnail?: string;
 }

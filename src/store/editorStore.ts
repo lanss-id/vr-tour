@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { dataManager } from '../utils/dataManager';
+import { MinimapData, MinimapMarker } from '../types/panorama';
 
 interface EditorState {
     currentPanoramaId: string;
@@ -8,6 +9,7 @@ interface EditorState {
     isEditing: boolean;
     selectedHotspotId: string | null;
     editMode: 'hotspot' | 'minimap' | 'navigation' | 'supabase' | 'settings';
+    minimapData: MinimapData;
     navigationMenu: {
         categories: any[];
         layout: 'grid' | 'list' | 'cards';
@@ -36,6 +38,13 @@ interface EditorState {
     clearHotspots: () => void;
     updateNavigationMenu: (updates: any) => void;
     setEditMode: (mode: 'hotspot' | 'minimap' | 'navigation' | 'supabase' | 'settings') => void;
+    
+    // Minimap actions
+    updateMinimapData: (updates: Partial<MinimapData>) => void;
+    addMinimapMarker: (marker: MinimapMarker) => void;
+    updateMinimapMarker: (id: string, updates: Partial<MinimapMarker>) => void;
+    deleteMinimapMarker: (id: string) => void;
+    addPanoramaToMinimap: (panoramaId: string, x: number, y: number) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -46,6 +55,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     isEditing: false,
     selectedHotspotId: null,
     editMode: 'hotspot',
+    minimapData: {
+        backgroundImage: '',
+        markers: [],
+        panoramas: []
+    },
     navigationMenu: {
         categories: [
             {
@@ -322,6 +336,47 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }));
     },
     setEditMode: (mode) => set({ editMode: mode }),
+    
+    // Minimap actions
+    updateMinimapData: (updates: Partial<MinimapData>) => {
+        set((state) => ({
+            minimapData: { ...state.minimapData, ...updates }
+        }));
+    },
+    addMinimapMarker: (marker: MinimapMarker) => {
+        set((state) => ({
+            minimapData: {
+                ...state.minimapData,
+                markers: [...state.minimapData.markers, marker]
+            }
+        }));
+    },
+    updateMinimapMarker: (id: string, updates: Partial<MinimapMarker>) => {
+        set((state) => ({
+            minimapData: {
+                ...state.minimapData,
+                markers: state.minimapData.markers.map(marker =>
+                    marker.id === id ? { ...marker, ...updates } : marker
+                )
+            }
+        }));
+    },
+    deleteMinimapMarker: (id: string) => {
+        set((state) => ({
+            minimapData: {
+                ...state.minimapData,
+                markers: state.minimapData.markers.filter(marker => marker.id !== id)
+            }
+        }));
+    },
+    addPanoramaToMinimap: (panoramaId: string, x: number, y: number) => {
+        set((state) => ({
+            minimapData: {
+                ...state.minimapData,
+                panoramas: [...state.minimapData.panoramas, { id: panoramaId, x, y }]
+            }
+        }));
+    },
 }));
 
 // Helper functions untuk akses data panorama

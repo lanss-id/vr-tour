@@ -40,4 +40,31 @@ export interface HotspotRow {
   style: any;
   target_node_id?: string;
   created_at?: string;
+}
+
+export interface MinimapRow {
+  id: string;
+  name: string;
+  background_image_url: string;
+  markers: MinimapMarkerData[];
+  settings: MinimapSettings;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MinimapMarkerData {
+  id: string;
+  node_id: string;
+  x: number;
+  y: number;
+  label: string;
+  type: 'panorama' | 'custom';
+}
+
+export interface MinimapSettings {
+  width: number;
+  height: number;
+  scale: number;
+  show_labels: boolean;
+  show_connections: boolean;
 } 

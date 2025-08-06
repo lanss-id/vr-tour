@@ -1,3 +1,24 @@
+# Langkah Selanjutnya - Implementasi Minimap
+
+## Status Saat Ini
+
+✅ **Sudah Selesai:**
+- Editor store dengan minimap actions
+- Types untuk MinimapData dan MinimapPanorama
+- SQL setup script untuk database
+- Dokumentasi perbaikan masalah
+
+🔄 **Sedang Dalam Proses:**
+- Update MinimapEditor dengan fitur drop panorama
+- Properties panel untuk edit panorama position
+
+## Langkah Selanjutnya
+
+### 1. Update MinimapEditor.tsx
+
+Ganti konten `src/components/editor/MinimapEditor.tsx` dengan kode berikut:
+
+```typescript
 import React, { useState, useRef } from 'react';
 import { Map, Upload, Trash2, Save } from 'lucide-react';
 import { useEditorStore } from '../../store/editorStore';
@@ -455,3 +476,58 @@ const MinimapEditor: React.FC = () => {
 };
 
 export default MinimapEditor;
+```
+
+### 2. Jalankan SQL Setup
+
+Jalankan file `minimap-setup.sql` di Supabase SQL Editor untuk membuat:
+- Tabel `minimaps`
+- Storage bucket `minimaps`
+- Policies untuk keamanan
+
+### 3. Test Fitur
+
+1. **Upload Floorplan Image**
+   - Klik icon upload (📤)
+   - Pilih file gambar floorplan
+   - Gambar akan muncul di canvas
+
+2. **Drag & Drop Panorama**
+   - Drag panorama dari panel kiri ke minimap
+   - Panorama akan muncul sebagai marker ungu
+   - Klik panorama untuk edit properties
+
+3. **Edit Properties**
+   - Klik panorama untuk edit posisi
+   - Klik marker untuk edit properties
+   - Properties panel akan muncul di bawah
+
+4. **Save ke Database**
+   - Klik "Save Floorplan"
+   - Data akan disimpan ke database
+
+### 4. Expected Results
+
+Setelah implementasi:
+- ✅ Node panorama akan muncul di minimap saat di-drop
+- ✅ Image akan tersimpan ke database
+- ✅ Properties panel akan berfungsi untuk edit posisi
+- ✅ Drag & drop panorama akan bekerja dengan baik
+- ✅ Save ke database akan berhasil
+
+### 5. Troubleshooting
+
+Jika ada masalah:
+- Cek console untuk error
+- Pastikan SQL setup sudah dijalankan
+- Cek environment variables
+- Pastikan file upload tidak terlalu besar
+
+## Status Implementasi
+
+🔄 **Dalam Proses:** Update MinimapEditor.tsx
+⏳ **Menunggu:** Test fitur drag & drop
+⏳ **Menunggu:** Test properties panel
+⏳ **Menunggu:** Test save ke database
+
+Setelah semua langkah selesai, fitur minimap akan berfungsi dengan sempurna! 🎉 

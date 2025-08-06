@@ -1,5 +1,6 @@
 import { supabase, PanoramaRow, MarkerRow, HotspotRow } from '../lib/supabase';
 import { PanoramaData, PanoramaMarker, HotspotData } from '../utils/dataManager';
+import { optimizeSupabaseUrl } from '../utils/imageCache';
 
 export class PanoramaService {
   // ===== PANORAMA CRUD OPERATIONS =====
@@ -343,8 +344,8 @@ export class PanoramaService {
   private static mapPanoramaRowToData(row: PanoramaRow): PanoramaData {
     return {
       id: row.id,
-      panorama: row.panorama_url,
-      thumbnail: row.thumbnail_url,
+      panorama: optimizeSupabaseUrl(row.panorama_url),
+      thumbnail: optimizeSupabaseUrl(row.thumbnail_url, 300), // Optimize thumbnails to 300px width
       name: row.name,
       caption: row.caption,
       markers: row.markers || [],

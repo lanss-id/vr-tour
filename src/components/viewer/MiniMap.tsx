@@ -84,7 +84,7 @@ const MiniMap: React.FC = () => {
     // Show loading state
     if (loading) {
         return (
-            <div className="absolute left-4 bottom-20 z-20">
+            <div className="absolute left-4 bottom-10 z-20">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 w-64 h-48 shadow-lg">
                     <div className="flex items-center justify-center h-full">
                         <div className="text-center">
@@ -100,7 +100,7 @@ const MiniMap: React.FC = () => {
     // Show error state
     if (error) {
         return (
-            <div className="absolute left-4 bottom-20 z-20">
+            <div className="absolute left-4 bottom-10 z-20">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 w-64 h-48 shadow-lg">
                     <div className="flex items-center justify-center h-full">
                         <div className="text-center">
@@ -116,7 +116,7 @@ const MiniMap: React.FC = () => {
     // Show empty state
     if (panoramas.length === 0) {
         return (
-            <div className="absolute left-4 bottom-20 z-20">
+            <div className="absolute left-4 bottom-10 z-20">
                 <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 w-64 h-48 shadow-lg">
                     <div className="flex items-center justify-center h-full">
                         <div className="text-center">
@@ -130,7 +130,7 @@ const MiniMap: React.FC = () => {
     }
 
     return (
-        <div className="absolute left-4 bottom-20 z-20">
+        <div className="absolute left-4 bottom-10 z-20">
             <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 w-64 h-48 shadow-lg">
                 <div className="relative w-full h-full">
                     <img

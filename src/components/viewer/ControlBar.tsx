@@ -100,7 +100,7 @@ const ControlBar: React.FC = () => {
     if (!controlsVisible) return null;
 
     return (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20">
             <div className="flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                 <Button
                     variant="ghost"

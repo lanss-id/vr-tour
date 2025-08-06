@@ -85,8 +85,8 @@ const SideButtons: React.FC = () => {
     if (allOverlaysHidden) return null;
 
     return (
-        <div className="absolute bottom-4 right-4 z-20">
-            <div className="flex flex-col space-y-2">
+        <div className="absolute bottom-10 right-4 z-20">
+            <div className="flex space-x-4">
                 {/* Info Button */}
                 <Button
                     variant="ghost"
